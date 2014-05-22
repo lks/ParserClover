@@ -1,27 +1,25 @@
 <?php
+include 'Entity/FileMetric.php';
 
 function test($child, $results)
 {
-	echo "Launch parser with ".$child->getName(). "\n";
-	if('file' == $child->getName()) {
-		$results[] = new FileMetric(
-			$child->metrics['name'],
-			$child->metrics['namespace'],
-			$child->metrics['methods'],
-			$child->metrics['coveredmethods'],
-			$child->metrics['statements'],
-			$child->metrics['coveredstatements']);
-		return $results;
-	} else {
-		if($child->count > 0) {
-			foreach(foreach($child->children as $newChild))
+		if(count($child->children()) > 0) {
+			foreach($child->children() as $newChild)
 			{
-				if('package' = $newChild->getName()) {
-					$result[] = $this->parser($newChild, $results);
+				if('package' == $newChild->getName()) {
+					$results = test($newChild, $results);
+				} else if ('file' == $newChild->getName()) {
+					array_push($results, new FileMetric(
+						$newChild->class['name'],
+						$newChild->class['namespace'],
+						$newChild->metrics['methods'],
+						$newChild->metrics['coveredmethods'],
+						$newChild->metrics['statements'],
+						$newChild->metrics['coveredstatements']));
 				}
 			}
+			return $results;
 		} else {
 			return $results;
 		}
-	}
 }

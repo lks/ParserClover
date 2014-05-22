@@ -1,6 +1,6 @@
 <?php
 
-include "entity/FileMetric.php";
+include "Utility/Parser.php";
 
 
 if (file_exists('clover.xml')) {
@@ -14,6 +14,6 @@ echo "test";
 
 //list all file without package
 $results = array();
-//test($xml->project, $results);
+$results = test($xml->project, $results);
 
-print_r(var_dump($results));
+print_r($results);

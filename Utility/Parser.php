@@ -11,7 +11,7 @@ function test($child, $results)
 				} else if ('file' == $newChild->getName()) {
 					array_push($results, new FileMetric(
 						$newChild->class['name'],
-						$newChild->class['namespace'][0],
+						$newChild->class['namespace'],
 						$newChild->metrics['methods'],
 						$newChild->metrics['coveredmethods'],
 						$newChild->metrics['statements'],

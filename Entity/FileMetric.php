@@ -15,8 +15,8 @@ class FileMetric
 		$statements,
 		$coveredStatements)
 	{
-		$this->name = $name;
-		$this->namespace = $namespace;
+		$this->name = "".$name;
+		$this->namespace = "".$namespace;
 		$this->methodRate = 0;
 		if($methods > 0)
 		{

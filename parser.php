@@ -10,13 +10,14 @@ if (file_exists('clover.xml')) {
 }
 
 //list all file without package
+$categories = ['Controller', 'Dao', 'Service', 'Exception', 'All'];
 $results = array();
-$results = test($xml->project, $results);
-function cmp($a, $b)
+foreach ($categories as $category)
 {
-    return $a->methodRate > $b->methodRate;
+	$results[$category] = array();
 }
-usort($results, "cmp");
+
+$results = test($xml->project, $results);
 
 if (file_exists('results.json')) {
   unlink('results.json');

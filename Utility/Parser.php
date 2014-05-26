@@ -1,5 +1,6 @@
 <?php
 include 'Entity/FileMetric.php';
+include 'Entity/GroupMetric.php';
 
 function test($child, $results)
 {
@@ -18,7 +19,7 @@ function test($child, $results)
 						$newChild->metrics['statements'],
 						$newChild->metrics['coveredstatements']);
 
-					array_push($results['All'], $fileMetric);
+					
 
 					if(ereg("Controller$", $newChild->class['name'])) {
 						array_push($results['Controller'], $fileMetric);
@@ -28,8 +29,9 @@ function test($child, $results)
 						array_push($results['Dao'], $fileMetric);
 					} else if(ereg("Exception$", $newChild->class['name'])) {
 						array_push($results['Exception'], $fileMetric);
+					} else {
+						array_push($results['Other'], $fileMetric);
 					}
-
 				}
 			}
 		}
@@ -37,4 +39,26 @@ function test($child, $results)
 	} else {
 		return $results;
 	}
+}
+
+function categorizedResult($results, $categories)
+{
+	$tmp = array();
+	foreach ($results as $key => $value) {
+		$insertGroup = new GroupMetric($key);
+		$nbFile = 0;
+		$methodRate = 0;
+		$statementRate = 0;
+		foreach ($value as $item)
+		{
+			$nbFile++;
+			$methodRate += $item->methodRate;
+			$statementRate += $item->statementRate;
+		}
+		$insertGroup->nbFile = $nbFile;
+		$insertGroup->methodRate = $methodRate / $nbFile;
+		$insertGroup->statementRate = $statementRate / $nbFile;
+		array_push($tmp, $insertGroup);
+	}
+	return $tmp;
 }

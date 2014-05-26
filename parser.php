@@ -18,16 +18,9 @@ function cmp($a, $b)
 }
 usort($results, "cmp");
 
-echo "<table>";
-
-foreach ($results as $result)
-{
-	echo "<tr><td>";
-	echo $result->name . "<br />";
-	echo "</td><td>";
-	echo $result->namespace . "<br />";
-	echo "</td><td>";
-	echo $result->methodRate . "<br />";
-	echo "</td></tr>";
+if (file_exists('results.json')) {
+  unlink('results.json');
 }
-echo "</table>";
+$fp = fopen('results.json', 'w');
+fwrite($fp, json_encode($results));
+fclose($fp);

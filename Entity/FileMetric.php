@@ -7,6 +7,9 @@ class FileMetric
 	public $namespace;
 	public $methodRate;
 	public $statementRate;
+	public $type;
+	public $bundle;
+	public $_rev;
 
 	public function __construct($name,
 		$namespace,

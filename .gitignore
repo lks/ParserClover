@@ -1,3 +1,5 @@
 clover.xml
 flare.json
 results.json
+vendor/*
+composer.phar

@@ -10,17 +10,21 @@ if (file_exists('clover.xml')) {
 }
 
 //list all file without package
+$categories = ['Controller', 'Dao', 'Service', 'Exception', 'Other'];
 $results = array();
-$results = test($xml->project, $results);
-function cmp($a, $b)
+foreach ($categories as $category)
 {
-    return $a->methodRate > $b->methodRate;
+	$results[$category] = array();
 }
-usort($results, "cmp");
+
+$results = test($xml->project, $results);
+
+// Manage the group by category
+$categorizedResult = categorizedResult($results, $categories);
 
 if (file_exists('results.json')) {
   unlink('results.json');
 }
 $fp = fopen('results.json', 'w');
-fwrite($fp, json_encode($results));
+fwrite($fp, json_encode($categorizedResult));
 fclose($fp);

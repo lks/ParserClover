@@ -64,9 +64,9 @@ function test($child, $results)
 function getBundle($object)
 {
 	$namespace = $object->namespace;
-	if(preg_match("/[a-z]{1,100}Bundle/", $namespace, $bundle, PREG_OFFSET_CAPTURE))
+	if(preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#", $namespace, $bundle, PREG_OFFSET_CAPTURE))
 	{
-		print_r($bundle[0]);
+		$object->bundle = $bundle[0][0];
 	}
 	return $object;
 }

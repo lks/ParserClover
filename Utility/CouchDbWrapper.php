@@ -1,5 +1,7 @@
 <?php
 
+namespace Utility;
+
 class CouchDbWrapper
 {
 	public function createDocument($object)
@@ -28,8 +30,6 @@ class CouchDbWrapper
 		    'Accept: */*'
 		));
 		$response = curl_exec($ch);
-		print $response;
-		curl_close($ch);
 		return $response;
 	}
 }

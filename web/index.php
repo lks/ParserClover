@@ -1,20 +1,37 @@
 <?php
 
-require_once __DIR__.'/../vendor/autoload.php';
-use Entity\GroupMetric;
+$loader = require __DIR__.'/../vendor/autoload.php';
+$loader->add('Service', __DIR__.'/../Service');
+$loader->add('Entity', __DIR__.'/../Entity');
+$loader->add('Excpetion', __DIR__.'/../Exception');
+$loader->add('Utility', __DIR__.'/../Utility');
+
+use Service\MetricService;
 
 $app = new Silex\Application();
 
-$blogPosts = array(
-    1 => array(
-        'date'      => '2011-03-29',
-        'author'    => 'igorw',
-        'title'     => 'Using Silex',
-        'body'      => '...',
-    ),
-);
+$app['CouchDbWrapper'] = $app->share(function () {
+	return new CouchDbWrapper();
+});
 
-$app->get('/blog', function () use ($blogPosts) {
+$app['ParserService'] = $app->share(function () {
+	return new ParserService($app['CouchDbWrapper']);
+});
+
+$app['MetricService'] = $app->share(function () {
+	return new MetricService($app['ParserService'], $app['CouchDbWrapper']);
+});
+
+$metricService = $app['MetricService'];
+
+$app->get('/load', function ($metricService) {
+
+	return "res";
+
+});
+
+// Get files link to the givent category
+$app->get('/categoryries/{name}', function () {
     $output = '';
     $test = new GroupMetric();
     foreach ($blogPosts as $post) {

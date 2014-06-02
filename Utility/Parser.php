@@ -5,7 +5,7 @@ include 'Utility/CouchDbWrapper.php';
 
 
 
-function test($child, $results)
+function parseFile($child, $results, $categories)
 {
 	$couchdb = new CouchDbWrapper();
 
@@ -13,51 +13,30 @@ function test($child, $results)
 		foreach($child->children() as $newChild)
 		{
 			if('package' == $newChild->getName()) {
-				$results = test($newChild, $results);
+				$results = test($newChild, $categories);
 			} else if ('file' == $newChild->getName()) {
 				if($newChild->class['name'] != "") {
-					$fileMetric = new FileMetric(
-						$newChild->class['name'],
-						$newChild->class['namespace'],
-						$newChild->metrics['methods'],
-						$newChild->metrics['coveredmethods'],
-						$newChild->metrics['statements'],
-						$newChild->metrics['coveredstatements']
-					);
-
-					if(ereg("Controller$", $newChild->class['name'])) {
-						$fileMetric->type = "Controller";
-
-						array_push($results['Controller'], $fileMetric);
-					} else if (ereg("Service$", $newChild->class['name'])) {
-						$fileMetric->type = "Service";
+					$fileMetric = new FileMetric($newChild->class, $newChild->metrics);
 						
-						array_push($results['Service'], $fileMetric);
-					} else if(ereg("DAO$", $newChild->class['name'])) {
-						$fileMetric->type = "Dao";
-
-						array_push($results['Dao'], $fileMetric);
-					} else if(ereg("Exception$", $newChild->class['name'])) {
-						$fileMetric->type = "Exception";
-
-						array_push($results['Exception'], $fileMetric);
-					} else if(ereg("Entity$", $newChild->class['name'])) {
-						$fileMetric->type = "Entity";
-
-						array_push($results['Entity'], $fileMetric);
-					} else {
-						$fileMetric->type = "Other";
-
-						array_push($results['Other'], $fileMetric);
+					$isFound = false;
+					foreach ($categories as $category) {
+						if(ereg($category."$", $newChild->class['name'])) {
+							$fileMetric->type = $category;
+							$isFound = true;
+							exit;
+						}
 					}
-
-					$couchdb->createDocument(getBundle($fileMetric));
+					if(!$isFound) {
+						$fileMetric->type = "Other";
+					}
+					$fileMetric = $this->setBundle($fileMetric);
+					$couchdb->createDocument();
 				}
 			}
 		}
-		return $results;
+		return true;
 	} else {
-		return $results;
+		return true;
 	}
 }
 

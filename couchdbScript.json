@@ -1,0 +1,13 @@
+{
+  "_id": "_design/application",
+  "_rev": "1-C1687D17",
+  "views": {
+    "byType": {
+      "map": "function(doc) { 
+      	if(doc.type && doc.bundle && doc.methodRate && doc.name) {
+		    emit(doc.type, {name: doc.name, bundle: doc.bundle), methodRate: doc.methodRate});
+		 }
+       }"
+    }
+  }
+}

@@ -7,25 +7,23 @@ class FileMetric
 	public $namespace;
 	public $methodRate;
 	public $statementRate;
+	public $type;
+	public $bundle;
+	public $_rev;
 
-	public function __construct($name,
-		$namespace,
-		$methods,
-		$coveredMethods,
-		$statements,
-		$coveredStatements)
+	public function __construct($class, $metric)
 	{
-		$this->name = "".$name;
-		$this->namespace = "".$namespace;
+		$this->name 		= "".$newChild->class['name'];
+		$this->namespace 	= "".$newChild->class['namespace'];
 		$this->methodRate = 0;
 		if($methods > 0)
 		{
-			$this->methodRate = $coveredMethods / $methods;
+			$this->methodRate = $newChild->metrics['coveredmethods'] / $newChild->metrics['methods'];
 		}
 		$this->statementRate = 0;
 		if($statements > 0)
 		{
-			$this->methodRate = $coveredStatements / $statements;
+			$this->methodRate = $newChild->metrics['coveredstatements'] / $newChild->metrics['statements'];
 		}
 	}
 

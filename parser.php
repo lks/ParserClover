@@ -10,7 +10,7 @@ if (file_exists('clover.xml')) {
 }
 
 //list all file without package
-$categories = ['Controller', 'Dao', 'Service', 'Exception', 'Other'];
+$categories = ['Controller', 'Dao', 'Entity', 'Service', 'Exception', 'Other'];
 $results = array();
 foreach ($categories as $category)
 {

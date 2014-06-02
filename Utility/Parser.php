@@ -1,44 +1,53 @@
 <?php
 include 'Entity/FileMetric.php';
 include 'Entity/GroupMetric.php';
+include 'Utility/CouchDbWrapper.php';
 
-function test($child, $results)
+
+
+function parseFile($child, $results, $categories)
 {
+	$couchdb = new CouchDbWrapper();
+
 	if(count($child->children()) > 0) {
 		foreach($child->children() as $newChild)
 		{
 			if('package' == $newChild->getName()) {
-				$results = test($newChild, $results);
+				$results = test($newChild, $categories);
 			} else if ('file' == $newChild->getName()) {
 				if($newChild->class['name'] != "") {
-					$fileMetric = new FileMetric(
-						$newChild->class['name'],
-						$newChild->class['namespace'],
-						$newChild->metrics['methods'],
-						$newChild->metrics['coveredmethods'],
-						$newChild->metrics['statements'],
-						$newChild->metrics['coveredstatements']);
-
-					
-
-					if(ereg("Controller$", $newChild->class['name'])) {
-						array_push($results['Controller'], $fileMetric);
-					} else if (ereg("Service$", $newChild->class['name'])) {
-						array_push($results['Service'], $fileMetric);
-					} else if(ereg("DAO$", $newChild->class['name'])) {
-						array_push($results['Dao'], $fileMetric);
-					} else if(ereg("Exception$", $newChild->class['name'])) {
-						array_push($results['Exception'], $fileMetric);
-					} else {
-						array_push($results['Other'], $fileMetric);
+					$fileMetric = new FileMetric($newChild->class, $newChild->metrics);
+						
+					$isFound = false;
+					foreach ($categories as $category) {
+						if(ereg($category."$", $newChild->class['name'])) {
+							$fileMetric->type = $category;
+							$isFound = true;
+							exit;
+						}
 					}
+					if(!$isFound) {
+						$fileMetric->type = "Other";
+					}
+					$fileMetric = $this->setBundle($fileMetric);
+					$couchdb->createDocument();
 				}
 			}
 		}
-		return $results;
+		return true;
 	} else {
-		return $results;
+		return true;
 	}
+}
+
+function getBundle($object)
+{
+	$namespace = $object->namespace;
+	if(preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#", $namespace, $bundle, PREG_OFFSET_CAPTURE))
+	{
+		$object->bundle = $bundle[0][0];
+	}
+	return $object;
 }
 
 function categorizedResult($results, $categories)
@@ -49,15 +58,18 @@ function categorizedResult($results, $categories)
 		$nbFile = 0;
 		$methodRate = 0;
 		$statementRate = 0;
+		$listFiles = array();
 		foreach ($value as $item)
 		{
 			$nbFile++;
 			$methodRate += $item->methodRate;
 			$statementRate += $item->statementRate;
+			$listFiles[] = $item->name;
 		}
 		$insertGroup->nbFile = $nbFile;
 		$insertGroup->methodRate = $methodRate / $nbFile;
 		$insertGroup->statementRate = $statementRate / $nbFile;
+		$insertGroup->listFiles = $listFiles;
 		array_push($tmp, $insertGroup);
 	}
 	return $tmp;

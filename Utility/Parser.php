@@ -23,7 +23,7 @@ function parseFile($child, $results, $categories)
 						if(ereg($category."$", $newChild->class['name'])) {
 							$fileMetric->type = $category;
 							$isFound = true;
-							exit;
+							break;
 						}
 					}
 					if(!$isFound) {

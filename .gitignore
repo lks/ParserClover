@@ -3,3 +3,4 @@ flare.json
 results.json
 vendor/*
 composer.phar
+log/*

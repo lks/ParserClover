@@ -12,27 +12,28 @@ use Utility\CouchDbWrapper;
 
 $app = new Silex\Application();
 
-$app['CouchDbWrapper'] =$app->share(function () {
-	return new CouchDbWrapper();
-});
-
-$app['ParserService'] = $app->share(function ($app) {
-	return new ParserService($app['CouchDbWrapper']);
-});
-
-$app['MetricService'] = $app->share(function ($app) {
-	return new MetricService($app['ParserService']);
-});
-
-$metricService = $app['MetricService'];
-
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
     'monolog.logfile' => __DIR__.'/../log/development.log',
 ));
 
-$app->get('/load', function() use($metricService) {
+$app['couchDbWrapper'] =$app->share(function ($app) {
+	return new CouchDbWrapper();
+});
+
+$app['parserService'] = $app->share(function ($app) {
+	return new ParserService($app['couchDbWrapper'], $app['monolog']);
+});
+
+$app['metricService'] = $app->share(function ($app) {
+	return new MetricService($app['parserService'], $app['monolog']);
+});
+
+
+
+$app->get('/load', function() use($app) {
 	try {
-		return $metricService->load();
+		$app["metricService"]->load();
+		return "Works";
 	} catch (Exception $e) {
 		return $e->getMessage();
 	}

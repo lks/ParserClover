@@ -8,20 +8,28 @@ require_once __DIR__.'/../Service/ParserService.php';
 class MetricService
 {
 	protected $parserService;
+	protected $monolog;
 
-	public function __construct($parserService) {
+
+	public function __construct($parserService, $monolog) {
 		$this->parserService = $parserService;
+		$this->monolog = $monolog;
 	}
 
 	public function load() {
 		$xml = null;
+		$filename = 'clover.xml';
+		
+		$this->monolog->addDebug("Begin the loading...");
 		//TODO : Include this in configuration
-		if (file_exists('../clover.xml')) {
-		    $xml = simplexml_load_file('../clover.xml');
+		if (file_exists('../'.$filename)) {
+		    $xml = simplexml_load_file('../'.$filename);
 		} else {
 			return "error";
 			
 		}
+		$this->monolog->addDebug(sprintf("File '%s' is loaded", $filename));
+
 		//list all file without package
 		// TODO : Include this in configuration
 		$categories = ['Controller', 'Dao', 'Entity', 'Service', 'Exception', 'Other'];

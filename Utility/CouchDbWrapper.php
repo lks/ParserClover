@@ -4,6 +4,7 @@ namespace Utility;
 
 class CouchDbWrapper
 {
+
 	public function createDocument($object)
 	{
 		$ch = curl_init();

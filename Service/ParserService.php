@@ -11,12 +11,14 @@ use Utility\CouchDbWrapper;
 class ParserService
 {
 	protected $couchDbWrapper;
+	protected $monolog;
 
 	/**
 	 * 
 	 */
-	public function __construct($couchDbWrapper) {
+	public function __construct($couchDbWrapper, $monolog) {
 		$this->couchDbWrapper = $couchDbWrapper;
+		$this->monolog = $monolog;
 	}
 
 	/**
@@ -31,6 +33,7 @@ class ParserService
 	{
 		$result = array();
 
+		$this->monolog->addDebug("Begin the treatement...");
 		if(count($child->children()) > 0) {
 			foreach($child->children() as $newChild)
 			{
@@ -39,14 +42,17 @@ class ParserService
 				} else if ('file' == $newChild->getName()) {
 
 					if($newChild->class['name'] != "") {
-						$fileMetric = new FileMetric($newChild->class, $newChild->metrics);
+						$this->monolog->addDebug(sprintf("Create file metric '%s' ", $newChild->class['name']));
+						$class = $newChild->class;
+						$metrics = $newChild->metrics;
+						$fileMetric = new FileMetric($class, $metrics);
 						$isFound = false;
 
 						foreach ($categories as $category) {
 							if(preg_match("#".$category."$#", $newChild->class['name'])) {
 								$fileMetric->type = $category;
 								$isFound = true;
-								exit;
+								break;
 							}
 						}
 						if(!$isFound) {

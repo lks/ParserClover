@@ -3,23 +3,21 @@
 namespace Service;
 
  require_once __DIR__.'/../Exception/FileOpeningException.php';
+require_once __DIR__.'/../Service/ParserService.php';
 
 class MetricService
 {
 	protected $parserService;
-	protected $couchDbWrapper;
 
-	public function __construct($parserService, $couchDbWrapper) {
+	public function __construct($parserService) {
 		$this->parserService = $parserService;
-		$this->couchDbWrapper = $couchDbWrapper;
 	}
 
 	public function load() {
-		return "error";
 		$xml = null;
 		//TODO : Include this in configuration
-		if (file_exists('clover.xml')) {
-		    $xml = simplexml_load_file('clover.xml');
+		if (file_exists('../clover.xml')) {
+		    $xml = simplexml_load_file('../clover.xml');
 		} else {
 			return "error";
 			
@@ -27,7 +25,7 @@ class MetricService
 		//list all file without package
 		// TODO : Include this in configuration
 		$categories = ['Controller', 'Dao', 'Entity', 'Service', 'Exception', 'Other'];
-		$parserService->createMetric($xml->project, $categories);
+		return $this->parserService->createMetric($xml->project, $categories);
 	}
 
 	public function listAll() {

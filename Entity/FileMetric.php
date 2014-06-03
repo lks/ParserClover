@@ -1,5 +1,6 @@
 <?php
 
+namespace Entity;
 
 class FileMetric
 {
@@ -13,17 +14,17 @@ class FileMetric
 
 	public function __construct($class, $metric)
 	{
-		$this->name 		= "".$newChild->class['name'];
-		$this->namespace 	= "".$newChild->class['namespace'];
+		$this->name 		= "".$class['name'];
+		$this->namespace 	= "".$class['namespace'];
 		$this->methodRate = 0;
-		if($methods > 0)
+		if($metric['methods'] > 0)
 		{
-			$this->methodRate = $newChild->metrics['coveredmethods'] / $newChild->metrics['methods'];
+			$this->methodRate = $metric['coveredmethods'] / $metric['methods'];
 		}
 		$this->statementRate = 0;
-		if($statements > 0)
+		if($metric['statements'] > 0)
 		{
-			$this->methodRate = $newChild->metrics['coveredstatements'] / $newChild->metrics['statements'];
+			$this->methodRate = $metric['coveredstatements'] / $metric['statements'];
 		}
 	}
 

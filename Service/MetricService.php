@@ -2,8 +2,8 @@
 
 namespace Service;
 
- require_once __DIR__.'/../Exception/FileOpeningException.php';
-require_once __DIR__.'/../Service/ParserService.php';
+ use Service\parserService;
+ use Exception\FileOpeningException;
 
 class MetricService
 {
@@ -19,7 +19,7 @@ class MetricService
 	public function load() {
 		$xml = null;
 		$filename = 'clover.xml';
-		
+
 		$this->monolog->addDebug("Begin the loading...");
 		//TODO : Include this in configuration
 		if (file_exists('../'.$filename)) {

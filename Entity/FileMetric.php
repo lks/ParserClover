@@ -27,5 +27,4 @@ class FileMetric
 			$this->methodRate = $metric['coveredstatements'] / $metric['statements'];
 		}
 	}
-
 }

@@ -1,9 +1,6 @@
 <?php
 namespace Service;
 
-require_once __DIR__.'/../Utility/CouchDbWrapper.php';
-require_once __DIR__.'/../Entity/FileMetric.php';
-
 use Entity\FileMetric;
 use Utility\CouchDbWrapper;
 
@@ -42,7 +39,8 @@ class ParserService
 				} else if ('file' == $newChild->getName()) {
 
 					if($newChild->class['name'] != "") {
-						$this->monolog->addDebug(sprintf("Create file metric '%s' ", $newChild->class['name']));
+						$this->monolog->addDebug(
+								sprintf("Create file metric '%s' ", $newChild->class['name']));
 						$class = $newChild->class;
 						$metrics = $newChild->metrics;
 						$fileMetric = new FileMetric($class, $metrics);
@@ -76,7 +74,10 @@ class ParserService
 	private function setBundle($object)
 	{
 		$namespace = $object->namespace;
-		if(preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#", $namespace, $bundle, PREG_OFFSET_CAPTURE))
+		if(preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#", 
+					$namespace, 
+					$bundle, 
+					PREG_OFFSET_CAPTURE))
 		{
 			$object->bundle = $bundle[0][0];
 		}

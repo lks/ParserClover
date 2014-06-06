@@ -2,19 +2,19 @@
 namespace Service;
 
 use Entity\FileMetric;
-use Utility\CouchDbWrapper;
+use Doctrine\CouchDB\CouchDBClient;
 
 
 class ParserService
 {
-	protected $couchDbWrapper;
+	protected $couchDbClient;
 	protected $monolog;
 
 	/**
 	 * 
 	 */
-	public function __construct($couchDbWrapper, $monolog) {
-		$this->couchDbWrapper = $couchDbWrapper;
+	public function __construct($couchDbClient, $monolog) {
+		$this->couchDbClient = $couchDbClient;
 		$this->monolog = $monolog;
 	}
 
@@ -58,16 +58,14 @@ class ParserService
 						}
 
 						$fileMetric = $this->setBundle($fileMetric);
-						array_push($result, $fileMetric);
 
-						$this->couchDbWrapper->createDocument($fileMetric);
+						$theDocument = $this->couchDbClient->findDocument($fileMetric->name);
+						if ($theDocument != null) {
+							$this->couchDbClient->putDocument((array) $fileMetric, $fileMetric->name, $theDocument->body['_rev']);
+						}
 					}
 				}
 			}
-
-			return $result;
-		} else {
-			return $result;
 		}
 	}
 

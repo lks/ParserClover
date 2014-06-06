@@ -4,3 +4,4 @@ results.json
 vendor/*
 composer.phar
 log/*
+bower_components/*

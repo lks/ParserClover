@@ -1,0 +1,10 @@
+{
+	"name": "wine-be-cool",
+  	"version": "0.0.1",
+  	"dependencies": {
+    	"angular-bootstrap": "*",
+    	"bootstrap": "*",
+    	"angular-route": "*",
+    	"angular-resource": "*"
+  	}
+}

@@ -2,23 +2,36 @@
 
 namespace Service;
 
- use Service\parserService;
+ use Service\ParserService;
  use Exception\FileOpeningException;
   use Exception\NothingFoundException;
  use Doctrine\CouchDB\CouchDBClient;
 
+/**
+ * This class manage the metric query to provid to the controller the datas.
+ */
 class MetricService
 {
 	protected $parserService;
 	protected $couchDbClient;
 	protected $monolog;
 
+	/**
+     * @param ParserService $parserService
+     * @param CouchDBClient $couchDbClient
+     * @param Monolog $monolog
+     */
 	public function __construct($parserService, $couchDbClient, $monolog) {
 		$this->parserService = $parserService;
 		$this->couchDbClient = $couchDbClient;
 		$this->monolog 		 = $monolog;
 	}
 
+	/**
+     * Load the data from the file defined in configuration
+     * 
+     * @return Nothing
+     */
 	public function load() {
 		$xml = null;
 		$filename = 'clover.xml';
@@ -37,10 +50,15 @@ class MetricService
 		//list all file without package
 		// TODO : Include this in configuration
 		$categories = ['Controller', 'DAO', 'Entity', 'Service', 'Exception', 'Other'];
-		return $this->parserService->createMetric($xml->project, $categories);
+		$this->parserService->createMetric($xml->project, $categories);
 	}
 
-	public function listAll($designDocument) {
+	/**
+     * List all the document contained in the Database 
+     * 
+     * @return Array with all Document Item
+     */
+	public function listAll() {
 		$response = $this->couchDbClient->allDocs();
 		if($response == null) {
 			throw new NothingFoundException("No item has been found.");
@@ -49,10 +67,24 @@ class MetricService
 		
 	}
 
+	/**
+     * List by type the document contained in the Database 
+     * @param  DesignDocument Design document associated to the view
+     * @param  String Type name. It can have the following value: Controller, DAO, Service, Entity, Exception, Other
+     * 
+     * @return Array with all Document Item
+     */
 	public function listByType($designDocument, $type) {
 		return $this->getFilteredItems('filters', 'type', $designDocument, $type);
 	}
 
+	/**
+     * List by bundle name the document contained in the Database 
+     * @param  DesignDocument Design document associated to the view
+     * @param  String bundle name.
+     * 
+     * @return Array with all Document Item
+     */
 	public function listByBundle($designDocument, $bundleName) {
 		return $this->getFilteredItems('filters', 'bundle', $designDocument, $bundleName);
 	}

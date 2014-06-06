@@ -44,8 +44,10 @@ $app['metricService'] = $app->share(function ($app) {
 
 $app->get('/load', function() use($app) {
 	try {
+		$view = new FolderDesignDocument("../Couchdb");
+		$app['couchDbClient']->createDesignDocument("filters", $view);
 		$app["metricService"]->load();
-		return "Works";
+		return "The file has been loaded in the server";
 	} catch (Exception $e) {
 		return $e->getMessage();
 	}
@@ -54,7 +56,7 @@ $app->get('/load', function() use($app) {
 $app->get('/all', function() use($app) {
 	try {
 		$view = new FolderDesignDocument("../Couchdb");
-		$list = $app["metricService"]->listAll($view);
+		$list = $app["metricService"]->listAll();
 		echo var_dump($list);
 		
 		return "Works";

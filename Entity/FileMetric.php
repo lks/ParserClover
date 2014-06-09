@@ -10,7 +10,6 @@ class FileMetric
 	public $statementRate;
 	public $type;
 	public $bundle;
-	public $_rev;
 
 	public function __construct($class, $metric)
 	{

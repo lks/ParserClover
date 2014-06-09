@@ -1,5 +1,5 @@
 {
-	"name": "wine-be-cool",
+	"name": "parserClover",
   	"version": "0.0.1",
   	"dependencies": {
     	"angular-bootstrap": "*",

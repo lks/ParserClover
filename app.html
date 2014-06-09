@@ -1,15 +1,41 @@
 <!doctype html>
-<html ng-app="wineByCoolApp">
+<html ng-app="parserApp">
   <head>
-    <script src="bower_components/angular/angular.min.js"></script>
-    <script src="web/js/project.js"></script>
+    <link href="bower_components/bootstrap/dist/css/bootstrap.min.css"  rel="stylesheet">
+    <link href="bower_components/bootstrap/dist/css/bootstrap-theme.css" rel="stylesheet">
   </head>
   <body>
-    <div>
-      <label>Name:</label>
-      <input type="text" ng-model="yourName" placeholder="Enter a name here">
-      <hr>
-      <h1>Hello {{yourName}}!</h1>
-    </div>
+	<!-- HEADER AND NAVBAR -->
+		<header>
+			<nav class="navbar navbar-default">
+			<div class="container">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="/">Wine Be Cool</a>
+				</div>
+
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="#"><i class="fa fa-home"></i>Home</a></li>
+				</ul>
+			</div>
+			</nav>
+		</header>
+
+		<!-- MAIN CONTENT AND INJECTED VIEWS -->
+		<div id="main" class="container">
+			<!-- angular templating -->
+			<!-- this is where content will be injected -->
+			<div id="spinner" style="display:none;">
+			    <p>Loading...</p>
+			</div>
+			<div ng-view></div>
+
+		</div>
   </body>
+  <script src="http://code.jquery.com/jquery.min.js"></script>
+  <script src="bower_components/angular/angular.min.js"></script>
+  <script src="bower_components/angular-route/angular-route.min.js"></script>
+  <script src="bower_components/angular-resource/angular-resource.min.js"></script>
+  <script src="bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
+  <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+  <script src="web/js/project.js"></script>
 </html>

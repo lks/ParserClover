@@ -3,5 +3,6 @@ flare.json
 results.json
 vendor/*
 composer.phar
+composer.lock
 log/*
 bower_components/*

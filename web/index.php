@@ -30,19 +30,24 @@ $app['couchDbClient'] =$app->share(function ($app) {
 });
 
 $app['parserService'] = $app->share(function ($app) {
-	return new ParserService( 
-					$app['couchDbClient'], 
+	return new ParserService(
+					$app['couchDbClient'],
 					$app['monolog']);
 });
 
 $app['metricService'] = $app->share(function ($app) {
 	return new MetricService(
-					$app['parserService'], 
-					$app['couchDbClient'], 
+					$app['parserService'],
+					$app['couchDbClient'],
 					$app['monolog']);
 });
 
 $app->get('/load', function() use($app) {
+	try {
+			$app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
+	} catch (Exception $e) {
+		$app['monolog']->addDebug("Database already exists.");
+	}
 	try {
 		$view = new FolderDesignDocument("../Couchdb");
 		$app['couchDbClient']->createDesignDocument("filters", $view);
@@ -58,7 +63,7 @@ $app->get('/all', function() use($app) {
 		$view = new FolderDesignDocument("../Couchdb");
 		$list = $app["metricService"]->listAll();
 		echo var_dump($list);
-		
+
 		return "Works";
 	} catch (Exception $e) {
 		return $e->getMessage();
@@ -70,7 +75,7 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
 		$view = new FolderDesignDocument("../Couchdb");
 		$list = $app["metricService"]->listByType($view, $typeName);
 		echo var_dump($list);
-		
+
 		return "Works";
 	} catch (Exception $e) {
 		return $e->getMessage();
@@ -82,7 +87,7 @@ $app->get('/bundle/{bundleName}', function ($typeName) use ($app) {
 		$view = new FolderDesignDocument("../Couchdb");
 		$list = $app["metricService"]->listByType($view, $bundleName);
 		echo var_dump($list);
-		
+
 		return "Works";
 	} catch (Exception $e) {
 		return $e->getMessage();

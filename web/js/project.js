@@ -1,4 +1,4 @@
-var parserApp = angular.module('parserApp', ['listComponent','ui.bootstrap','ui.bootstrap.alert','ngRoute', 'ngResource']);
+var parserApp = angular.module('parserApp', ['components','ui.bootstrap','ui.bootstrap.alert','ngRoute', 'ngResource']);
 
 // Spinner for all pages
 parserApp.config(function ($httpProvider) {

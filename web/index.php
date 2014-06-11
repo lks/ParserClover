@@ -62,9 +62,8 @@ $app->get('/all', function() use($app) {
 	try {
 		$view = new FolderDesignDocument("../Couchdb");
 		$list = $app["metricService"]->listAll();
-		echo var_dump($list);
+		return json_encode($list);
 
-		return "Works";
 	} catch (Exception $e) {
 		return $e->getMessage();
 	}
@@ -74,21 +73,17 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
    try {
 		$view = new FolderDesignDocument("../Couchdb");
 		$list = $app["metricService"]->listByType($view, $typeName);
-		echo var_dump($list);
-
-		return "Works";
+		return json_encode($list);
 	} catch (Exception $e) {
 		return $e->getMessage();
 	}
 });
 
-$app->get('/bundle/{bundleName}', function ($typeName) use ($app) {
+$app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
    try {
 		$view = new FolderDesignDocument("../Couchdb");
-		$list = $app["metricService"]->listByType($view, $bundleName);
-		echo var_dump($list);
-
-		return "Works";
+		$list = $app["metricService"]->listByBundle($view, $bundleName);
+		return json_encode($list);
 	} catch (Exception $e) {
 		return $e->getMessage();
 	}

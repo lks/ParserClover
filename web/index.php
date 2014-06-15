@@ -17,6 +17,10 @@ $app['couchBdConfig'] = array(
 		'host'	 =>	'192.168.56.101'
 	);
 
+$app['metricConfig'] = array(
+	'interval' => array (0.30, 0.50, 0.80, 1)
+);
+
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
     'monolog.logfile' => __DIR__.'/../log/development.log',
 ));
@@ -49,6 +53,7 @@ $app['metricService'] = $app->share(function ($app) {
 
 $app->get('/load', function() use($app) {
 	try {
+			$app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
 			$app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
 	} catch (Exception $e) {
 		$app['monolog']->addDebug("Database already exists.");
@@ -67,8 +72,7 @@ $app->get('/all', function() use($app) {
 	try {
 		$view = new FolderDesignDocument("../Couchdb");
 		$list = $app["metricService"]->listAll();
-		$intervals = array (0.30, 0.50, 0.80, 1);
-		$listInterval = $app['dataManagementUtility']->groupByInterval($list['rows'], $intervals);
+		$listInterval = $app['dataManagementUtility']->groupByInterval($list['rows'], $app['metricConfig']['interval']);
 		$result = array();
 		$result['data'] = $list;
 		$result ['stat'] = $listInterval;
@@ -83,7 +87,12 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
    try {
 		$view = new FolderDesignDocument("../Couchdb");
 		$list = $app["metricService"]->listByType($view, $typeName);
-		return json_encode($list);
+		$listInterval = $app['dataManagementUtility']->groupByInterval($list, $app['metricConfig']['interval'], 'value');
+		$result = array();
+		$result['data'] = $list;
+		$result ['stat'] = $listInterval;
+		return json_encode($result);
+
 	} catch (Exception $e) {
 		return $e->getMessage();
 	}

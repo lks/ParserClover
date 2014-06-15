@@ -13,7 +13,7 @@ Class DataManagementUtility
     $this->monolog = $monolog;
   }
 
-  public function groupByInterval($list, $interval){
+  public function groupByInterval($list, $interval, $value = 'doc'){
     //for each interval, get class with a method rate contained is this one
     $previousInterval = -1;
     $listInterval = array();
@@ -24,9 +24,9 @@ Class DataManagementUtility
       $average = 0;
       $total = 0;
       foreach($list as $metric) {
-        if(isset($metric['doc']['methodRate'])
-        && $metric['doc']['methodRate'] > $previousInterval
-        && $metric['doc']['methodRate']  <= $item) {
+        if(isset($metric[$value]['methodRate'])
+        && $metric[$value]['methodRate'] > $previousInterval
+        && $metric[$value]['methodRate']  <= $item) {
           $average ++;
         }
       }
@@ -35,7 +35,7 @@ Class DataManagementUtility
 
       $previousInterval = $item;
       $this->monolog->addDebug(
-          sprintf("total: '%s'", $total));
+          sprintf("total: '%s'", count($list)));
 
     }
     return $listInterval;

@@ -29,7 +29,7 @@ class MetricService
 
 	/**
      * Load the data from the file defined in configuration
-     * 
+     *
      * @return Nothing
      */
 	public function load() {
@@ -43,7 +43,7 @@ class MetricService
 		    $xml = simplexml_load_file('../'.$filename);
 		} else {
 			return "error";
-			
+
 		}
 		$this->monolog->addDebug(sprintf("File '%s' is loaded", $filename));
 
@@ -54,8 +54,8 @@ class MetricService
 	}
 
 	/**
-     * List all the document contained in the Database 
-     * 
+     * List all the document contained in the Database
+     *
      * @return Array with all Document Item
      */
 	public function listAll() {
@@ -64,14 +64,14 @@ class MetricService
 			throw new NothingFoundException("No item has been found.");
 		}
 		return $response->body;
-		
+
 	}
 
 	/**
-     * List by type the document contained in the Database 
+     * List by type the document contained in the Database
      * @param  DesignDocument Design document associated to the view
      * @param  String Type name. It can have the following value: Controller, DAO, Service, Entity, Exception, Other
-     * 
+     *
      * @return Array with all Document Item
      */
 	public function listByType($designDocument, $type) {
@@ -79,10 +79,10 @@ class MetricService
 	}
 
 	/**
-     * List by bundle name the document contained in the Database 
+     * List by bundle name the document contained in the Database
      * @param  DesignDocument Design document associated to the view
      * @param  String bundle name.
-     * 
+     *
      * @return Array with all Document Item
      */
 	public function listByBundle($designDocument, $bundleName) {

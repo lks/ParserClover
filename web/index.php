@@ -5,6 +5,7 @@ require_once __DIR__.'/../vendor/autoload.php';
 use Service\MetricService;
 use Service\ParserService;
 use Utility\CouchDbWrapper;
+use Utility\DataManagementUtility;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\View\FolderDesignDocument;
 use Doctrine\CouchDB\View\DesignDocument;
@@ -22,6 +23,10 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 
 $app['couchDbWrapper'] =$app->share(function ($app) {
 	return new CouchDbWrapper();
+});
+
+$app['dataManagementUtility'] =$app->share(function ($app) {
+	return new DataManagementUtility($app['monolog']);
 });
 
 $app['couchDbClient'] =$app->share(function ($app) {
@@ -62,7 +67,12 @@ $app->get('/all', function() use($app) {
 	try {
 		$view = new FolderDesignDocument("../Couchdb");
 		$list = $app["metricService"]->listAll();
-		return json_encode($list);
+		$intervals = array (0.30, 0.50, 0.80, 1);
+		$listInterval = $app['dataManagementUtility']->groupByInterval($list['rows'], $intervals);
+		$result = array();
+		$result['data'] = $list;
+		$result ['stat'] = $listInterval;
+		return json_encode($result);
 
 	} catch (Exception $e) {
 		return $e->getMessage();

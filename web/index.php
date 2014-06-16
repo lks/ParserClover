@@ -12,11 +12,13 @@ use Doctrine\CouchDB\View\DesignDocument;
 
 $app = new Silex\Application();
 
+//define the configuration for the couchDb tool
 $app['couchBdConfig'] = array(
 		'dbname' => 'clover',
 		'host'	 =>	'192.168.56.101'
 	);
 
+// define our thresholds criterias
 $app['metricConfig'] = array(
 	'interval' => array (0.30, 0.50, 0.80, 1)
 );
@@ -33,17 +35,36 @@ $app['dataManagementUtility'] =$app->share(function ($app) {
 	return new DataManagementUtility($app['monolog']);
 });
 
+/**
+ * Used to get and to insert in Database the files associate their metrics. 
+ * This service needs as dependencies:
+ * - couchDbClient: define our SGBD client,
+ * - monolog: manage the log.
+ */
 $app['couchDbClient'] =$app->share(function ($app) {
 
 	return CouchDBClient::create($app['couchBdConfig']);
 });
 
+/**
+ * Used to get and to insert in Database the files associate their metrics. 
+ * This service needs as dependencies:
+ * - couchDbClient: define our SGBD client,
+ * - monolog: manage the log.
+ */
 $app['parserService'] = $app->share(function ($app) {
 	return new ParserService(
 					$app['couchDbClient'],
 					$app['monolog']);
 });
 
+/**
+ * Define the Metrics Service as a shared service. This service will manage all the metrics actions 
+ * management. This service needs as dependencies:
+ * - ParserService: get the metrics for a given file,
+ * - couchDbClient: define our SGBD client,
+ * - monolog: manage the log.
+ */
 $app['metricService'] = $app->share(function ($app) {
 	return new MetricService(
 					$app['parserService'],
@@ -51,13 +72,17 @@ $app['metricService'] = $app->share(function ($app) {
 					$app['monolog']);
 });
 
+/**
+ * Load Service manage the deletion of the Database and launch the genration of data on the DB.
+ * This service will also load the map/reduce configuration.
+ * 
+ * @throws Eception If an error occured during the loading phase.
+ *
+ * @return  String to confirm that the data is loaded.
+ */
 $app->get('/load', function() use($app) {
-	try {
-			$app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
-			$app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
-	} catch (Exception $e) {
-		$app['monolog']->addDebug("Database already exists.");
-	}
+	$app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
+	$app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
 	try {
 		$view = new FolderDesignDocument("../Couchdb");
 		$app['couchDbClient']->createDesignDocument("filters", $view);
@@ -68,6 +93,25 @@ $app->get('/load', function() use($app) {
 	}
 });
 
+/**
+ * All service will get all the files metrics and the statistics associated.
+ *
+ * @throws Exception If an error occured during the getting of the files metrics.
+ *
+ * @return Json object with the following formation:
+ *                     {"data": [
+ *                     		{
+ *                     			id: "",
+ *                     			"_rev": "",
+ *                     			"doc":
+ *                     			{
+ *                     				object serialized...
+ *                     			}
+ *                     		},
+ *                     	], 
+ *                     	"stat": [..., ..., ..., ...]
+ *                     }
+ */
 $app->get('/all', function() use($app) {
 	try {
 		$view = new FolderDesignDocument("../Couchdb");
@@ -83,6 +127,30 @@ $app->get('/all', function() use($app) {
 	}
 });
 
+/**
+ * Type service allow us to get the metrics for a given type of Classes. A type of class can be:
+ * 		- Controller,
+ *  	- Service, 
+ *   	- DAO, 
+ *    	- Entity,
+ *     	- Exception.
+ * 
+ * @throws Exception If an error occured during the getting of the files metrics.
+ *
+ * @return Json object with the following formation:
+ *                     {"data": [
+ *                     		{
+ *                     			id: "",
+ *                     			"_rev": "",
+ *                     			"value":
+ *                     			{
+ *                     				object serialized...
+ *                     			}
+ *                     		},
+ *                     	], 
+ *                     	"stat": [..., ..., ..., ...]
+ *                     }
+ */
 $app->get('/type/{typeName}', function ($typeName) use ($app) {
    try {
 		$view = new FolderDesignDocument("../Couchdb");
@@ -98,6 +166,29 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
 	}
 });
 
+/**
+ * Type service allow us to get the metrics for a given bundle. A bundle can be:
+ * 		- AmoBundle,
+ * 		- ProfileBundle,
+ * 		- SecurityBundle,
+ * 		- ...
+ * 
+ * @throws Exception If an error occured during the getting of the files metrics.
+ *
+ * @return Json object with the following formation:
+ *                     {"data": [
+ *                     		{
+ *                     			id: "",
+ *                     			"_rev": "",
+ *                     			"value":
+ *                     			{
+ *                     				object serialized...
+ *                     			}
+ *                     		},
+ *                     	], 
+ *                     	"stat": [..., ..., ..., ...]
+ *                     }
+ */
 $app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
    try {
 		$view = new FolderDesignDocument("../Couchdb");

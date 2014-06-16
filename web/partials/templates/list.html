@@ -5,12 +5,10 @@
 		<tr>
 			<th>Class Name</th>
 			<th>Method Rate</th>
-			<th>Statement Rate</th>
 		</tr>
 		<tr ng-repeat="item in list">
            <td>{{item.doc.name}}</td>
 			<td>{{item.doc.methodRate*100}}</td>
-			<td>{{item.doc.statementRate}}</td>
 		</tr>
 	</table>
     </ul>

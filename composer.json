@@ -1,16 +1,27 @@
 {
-    "require": {
-        "silex/silex": "~1.1",
-        "monolog/monolog": ">=1.0.0",
-        "doctrine/couchdb": "@dev"
-    },
-
-    "autoload": {
-        "psr-4": {
-           "Service\\": "Service/",
-           "Entity\\": "Entity/",
-           "Exception\\": "Exception/",
-           "Utility\\": "Utility/"
-        }
+  "name": "lks/parser-clover",
+  "description": "App to parse a clover file",
+  "keywords": ["clover","parse"],
+  "type": "symfony-app",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Joris Calabrese",
+      "email": "joris.calabrese@gmail.com"
     }
+  ],
+  "require": {
+    "silex/silex": "~1.1",
+    "monolog/monolog": ">=1.0.0",
+    "doctrine/couchdb": "1.0.*@dev"
+  },
+
+  "autoload": {
+    "psr-4": {
+       "Service\\": "Service/",
+       "Entity\\": "Entity/",
+       "Exception\\": "Exception/",
+       "Utility\\": "Utility/"
+    }
+  }
 }

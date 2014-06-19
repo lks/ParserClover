@@ -37,8 +37,6 @@ class MetricService
 		$filename = 'clover.xml';
 
 		$this->monolog->addDebug("Begin the loading...");
-
-		//TODO : Include this in configuration
 		if (file_exists('../'.$filename)) {
 		    $xml = simplexml_load_file('../'.$filename);
 		} else {
@@ -48,7 +46,6 @@ class MetricService
 		$this->monolog->addDebug(sprintf("File '%s' is loaded", $filename));
 
 		//list all file without package
-		// TODO : Include this in configuration
 		$categories = ['Controller', 'DAO', 'Entity', 'Service', 'Exception', 'Other'];
 		$this->parserService->createMetric($xml->project, $categories);
 	}

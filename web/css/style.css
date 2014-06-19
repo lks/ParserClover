@@ -11,5 +11,9 @@
   text-align: right;
   padding: 3px;
   margin: 5px;
-  color: white;
+  color: #fff;
+}
+
+.graph-display {
+  background-color: #ccc;
 }

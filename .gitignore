@@ -6,3 +6,4 @@ composer.phar
 composer.lock
 log/*
 bower_components/*
+build/*

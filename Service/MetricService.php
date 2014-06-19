@@ -37,8 +37,6 @@ class MetricService
 		$filename = 'clover.xml';
 
 		$this->monolog->addDebug("Begin the loading...");
-
-		//TODO : Include this in configuration
 		if (file_exists('../'.$filename)) {
 		    $xml = simplexml_load_file('../'.$filename);
 		} else {

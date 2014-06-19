@@ -1,5 +1,5 @@
 {
-  "name": "ParserClover",
+  "name": "lks/parser-clover",
   "description": "App to parse a clover file",
   "keywords": ["clover","parse"],
   "type": "symfony-app",
@@ -13,7 +13,7 @@
   "require": {
     "silex/silex": "~1.1",
     "monolog/monolog": ">=1.0.0",
-    "doctrine/couchdb": "@dev"
+    "doctrine/couchdb": "1.0.*@dev"
   },
 
   "autoload": {

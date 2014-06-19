@@ -5,16 +5,15 @@ use Entity\FileMetric;
 use Doctrine\CouchDB\CouchDBClient;
 
 
-class ParserService
+class ParserService implements IParserService
 {
 	protected $couchDbClient;
 	protected $monolog;
+	protected $categories;
 
-	/**
-	 *
-	 */
-	public function __construct($couchDbClient, $monolog) {
+	public function __construct($couchDbClient, $categories, $monolog) {
 		$this->couchDbClient = $couchDbClient;
+		$this->categories = $categories;
 		$this->monolog = $monolog;
 	}
 
@@ -69,6 +68,16 @@ class ParserService
 				}
 			}
 		}
+	}
+
+	public function parseCloverReport()
+	{
+		return null;
+	}
+
+	public function parsePmdReport()
+	{
+		
 	}
 
 	private function setBundle($object)

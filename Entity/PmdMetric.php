@@ -5,16 +5,14 @@ namespace Entity;
 class PmdMetric
 {
   public $name;
-  public $priority;
-  public $complexity;
+  public $listViolations;
   public $type;
   public $bundle;
 
-  public function __construct($name, $priority, $complexity, $type, $bundle)
+  public function __construct($name, $listViolations, $type, $bundle)
   {
     $this->name 		    = $name;
-    $this->priority 		= $priority;
-    $this->complexity   = $complexity;
+    $this->listViolations = $listViolations;
     $this->type         = $type;
     $this->bundle       = $bundle;
   }

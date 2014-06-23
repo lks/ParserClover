@@ -2,6 +2,8 @@
 namespace Service;
 
 use Entity\FileMetric;
+use Entity\PmdMetric;
+use Exception\NoPmdDataException;
 
 
 class ParserService implements IParserService
@@ -65,18 +67,48 @@ class ParserService implements IParserService
     }
   }
 
+  /**
+   * Parse the report of Clover and insert it in the database
+   *
+   * @return List of vialation inserted in the database
+   */
 	public function parseCloverReport()
 	{
 		return null;
 	}
 
-	public function parsePmdReport()
-	{
-		$nodes = $this->fileXmlToArray('../build/phppmd/pmd.xml');
-		
-		if($nodes != null) {
-			foreach($nodes as $vialation) {
 
+  /**
+   * Parse the report of Pmd and insert it in the database
+   *
+   * @return List of vialation inserted in the database
+   */
+	public function parsePmdReport($category)
+	{
+    $result = array();
+		$nodes = $this->fileXmlToArray('../build/phppmd/pmd.'.$category.'.xml');
+
+    // place the pointer on the right node
+    if(nodes == null) {
+      //TODO Implement this exception
+      throw new NoPmdDataException();
+    }
+
+    $fileNodes = $nodes->pmd;
+		
+		if($fileNodes != null) {
+      //for each file, I will populate an PmdMetric object used to ease the insert on DB
+			foreach($fileNodes as $file) {
+        $type = $category;
+        $bundle = $this->getBundle($file['name']);
+        foreach ($file->children() as $violation) {
+          //Populate an PmdOBject
+          if(isset($name)) {
+            $name = $violation['class'];
+          }
+          $priority = $violation['priority'];
+        }
+        array_push($result, ,new PmdMetric($name, , $type, $bundle));
 			}
 		}
 
@@ -114,4 +146,22 @@ class ParserService implements IParserService
 		}
 		return $object;
 	}
+
+  /**
+   * Get the Bundle name from the filename of a class
+   * 
+   * @param  $filename Name and path of the file we want to extract the bundle
+   * 
+   * @return String Bundle associated to the filename
+   */
+  private function getBundle($filename) {
+    if(preg_match("#[/]{1}[A-Za-z]{1,100}Bundle#",
+          $filename,
+          $bundle,
+          PREG_OFFSET_CAPTURE))
+    {
+      return $bundle[0][0];
+    }
+    return null;
+  }
 }

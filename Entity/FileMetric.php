@@ -2,6 +2,7 @@
 
 namespace Entity;
 
+//TODO depreciate it
 class FileMetric
 {
   public $name;

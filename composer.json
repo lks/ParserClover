@@ -13,7 +13,9 @@
   "require": {
     "silex/silex": "~1.1",
     "monolog/monolog": ">=1.0.0",
-    "doctrine/couchdb": "1.0.*@dev"
+    "doctrine/couchdb": "1.0.*@dev",
+    "jms/serializer-service-provider": "dev-develop",
+    "symfony/finder": "2.3.*@dev"
   },
 
   "autoload": {

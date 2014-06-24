@@ -9,6 +9,8 @@ use Utility\DataManagementUtility;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\View\FolderDesignDocument;
 use Doctrine\CouchDB\View\DesignDocument;
+use JMS\Serializer\SerializerBuilder;
+use Symfony\Component\Finder\Finder;
 
 $app = new Silex\Application();
 
@@ -16,6 +18,17 @@ $app = new Silex\Application();
 $app['couchBdConfig'] = array(
     'dbname' => 'clover',
     'host'   => '192.168.56.101'
+  );
+
+$app['classCategories'] = array(
+    'Controller' => 0,
+    'DAO'   => 0.85,
+    'Entity' => 0.80,
+    'Service' => 0.85,
+    'Other' => 0.80,
+    'Test' => 0,
+    'Renderer' => 0,
+    'Extension' => 0
   );
 
 // define our thresholds criterias
@@ -27,8 +40,17 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
     'monolog.logfile' => __DIR__.'/../log/development.log',
 ));
 
+$app->register(new JMS\SerializerServiceProvider\SerializerServiceProvider(), array(
+    'serializer.src_directory' => '../vendor/jms/serializer-bundle',
+    'serializer.cache.directory' => '../cache'
+));
+
 $app['couchDbWrapper'] =$app->share(function ($app) {
   return new CouchDbWrapper();
+});
+
+$app['finder'] =$app->share(function ($app) {
+  return new Finder();
 });
 
 $app['dataManagementUtility'] =$app->share(function ($app) {
@@ -53,7 +75,10 @@ $app['couchDbClient'] =$app->share(function ($app) {
  * - monolog: manage the log.
  */
 $app['parserService'] = $app->share(function ($app) {
-  return new ParserService($app['monolog']);
+  return new ParserService(
+          $app['monolog'], 
+          $app['finder'],
+          $app['classCategories']);
 });
 
 /**
@@ -192,6 +217,39 @@ $app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
     $view = new FolderDesignDocument("../Couchdb");
     $list = $app["metricService"]->listByBundle($view, $bundleName);
     return json_encode($list);
+  } catch (Exception $e) {
+    return $e->getMessage();
+  }
+});
+
+$app->get('/pmd', function () use ($app) {
+   try {
+    //$view = new FolderDesignDocument("../Couchdb");
+    $result = array();
+    $list = $app["parserService"]->parsePmdReport();
+    return $app['serializer']->serialize($list, 'json');
+  } catch (Exception $e) {
+    return $e->getMessage();
+  }
+});
+
+$app->get('/pmd', function () use ($app) {
+   try {
+    //$view = new FolderDesignDocument("../Couchdb");
+    $result = array();
+    $list = $app["parserService"]->parsePmdReport();
+    return $app['serializer']->serialize($list, 'json');
+  } catch (Exception $e) {
+    return $e->getMessage();
+  }
+});
+
+$app->get('/report', function () use ($app) {
+   try {
+    //$view = new FolderDesignDocument("../Couchdb");
+    $result = array();
+    $list = $app["parserService"]->mergeReport();
+    return $app['serializer']->serialize($list, 'json');
   } catch (Exception $e) {
     return $e->getMessage();
   }

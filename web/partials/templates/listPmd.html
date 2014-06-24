@@ -1,0 +1,14 @@
+<table class="table">
+	<tr>
+		<th>Class Name</th>
+		<th>Type</th>
+		<th>Nb Pmd violation</th>
+		<th>PhpUnit rate</th>
+	</tr>
+	<tr ng-repeat="item in list">
+		<td>{{ item.name }}</td>
+		<td>{{ item.type }}</td>
+		<td>{{ item.violations.pmd }}</td>
+		<td>{{ item.violations.phpunit }}</td>
+	</tr>
+</table>

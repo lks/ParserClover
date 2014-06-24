@@ -46,11 +46,27 @@ parserApp.config(function($routeProvider) {
       templateUrl : PARTIALS_PATH + 'list.html',
       controller  : 'SearchAllCtrl'
     })
+    .when('/pmd', {
+      templateUrl : PARTIALS_PATH + 'templates/listPmd.html',
+      controller  : 'PmdCtrl'
+    })
 });
 
 // create the controller and inject Angular's $scope
 parserApp.controller('mainController', function($scope) {
   $scope.type = "Controller";
 });
+
+// create the controller and inject Angular's $scope
+parserApp.controller('PmdCtrl', function($scope,  $http) {
+  url = "http://192.168.56.101/report";
+        $http({
+                url: url,
+                method: "get"
+            }).success(function (data, status, headers, config) {
+          $scope.list = data;
+        });
+});
+
 
 

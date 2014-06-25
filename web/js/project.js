@@ -46,7 +46,7 @@ parserApp.config(function($routeProvider) {
       templateUrl : PARTIALS_PATH + 'list.html',
       controller  : 'SearchAllCtrl'
     })
-    .when('/pmd', {
+    .when('/report', {
       templateUrl : PARTIALS_PATH + 'templates/listPmd.html',
       controller  : 'PmdCtrl'
     })
@@ -64,7 +64,10 @@ parserApp.controller('PmdCtrl', function($scope,  $http) {
                 url: url,
                 method: "get"
             }).success(function (data, status, headers, config) {
-          $scope.list = data;
+                $scope.list = data.data;
+                $scope.total = data.total;
+                $scope.nbViolationsPmd = data.nbViolationsPmd;
+                $scope.nbViolationsPhpUnit = data.nbViolationsPhpUnit;
         });
 });
 

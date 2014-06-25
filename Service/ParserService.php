@@ -69,24 +69,46 @@ class ParserService
     }
   }
 
+  /**
+   * Get the report for the metrics given in the params array and count the high priority number by 
+   * desired metric.
+   * The aim is to extract the high priority violation to have an overview of the refactoring task.
+   * 
+   * @param  array  $params Contained the metric to analyse, null if we want to analyse all metrics
+   * @return array of FileStats object
+   */
   public function mergeReport() {
-    $result = array();
+    $data = array();
+    $nbViolationsPmd = 0;
+    $nbViolationsPhpUnit = 0;
     $pmdResult = $this->parsePmdReport();
     $phpunitResult = $this->parsePhpUnitReport();
 
     foreach ($pmdResult as $key => $value) {
+        $nbViolationsPmd += $value->getViolations()['pmd'];
         if(isset($phpunitResult[$key])) {
             //let's go to merge result
-            $value->setViolations(array_merge($value->getViolations(), $phpunitResult[$key]->getViolations()));
-        } 
-        array_push($result, $value);
+            $value->setViolations(array_merge($value->getViolations(), $phpunitResult[$key]->getViolations()));   
+            $nbViolationsPhpUnit++;
+        }
+        array_push($data, $value);
+
+        //Delete the row added in the origin array
         unset($phpunitResult[$key]);
         array_values($phpunitResult);
     }
 
     foreach ($phpunitResult as $value) {
-         array_push($result, $value);
+         array_push($data, $value);
+         $nbViolationsPhpUnit++;
     }
+
+    $result = array();
+    $result ['total'] = count($data);
+    $result ['nbViolationsPmd'] = $nbViolationsPmd;
+    $result ['nbViolationsPhpUnit'] = $nbViolationsPhpUnit;
+    usort($data, array($this, 'sortMergeReport'));
+    $result ['data'] = $data;
 
     return $result;
   }
@@ -301,5 +323,42 @@ class ParserService
     }
     return $type;
   }
+
+  /**
+   * Sort function of the the result table.
+   * The constraints are the following:
+   *     - Have the pmd value and the phpunit value present,
+   *     - Have a pmd value superior, if equals, the phpunit have to be inferior,
+   *     - If juste one value is completed, Pmd take the advantage in DESC sort.
+   *     
+   * @param  FileStats $a
+   * @param  FileStats $b
+   * @return 0, if equals. 1, if $a is superior, -1 else.
+   */
+    public function sortMergeReport($a, $b) {
+        $aPmd = 0;
+        $aPhpUnit = 1;
+        $bPmd = 0;
+        $bPhpUnit = 1;
+        $aViolations = $a->getViolations();
+        $bViolations = $b->getViolations();
+
+        if(isset($aViolations['pmd'])) {
+            $aPmd = $aViolations['pmd'];
+        }
+        if(isset($aViolations['phpunit'])) {
+            $aPhpUnit = $aViolations['phpunit'];
+        }
+        if(isset($bViolations['pmd'])) {
+            $bPmd = $bViolations['pmd'];
+        }
+        if(isset($bViolations['phpunit'])) {
+            $bPhpUnit = $bViolations['phpunit'];
+        }
+        if($aPmd == $bPmd) {
+            return 0;
+        }
+        return ($aPmd < $bPmd) ? 1 : -1;
+    }
   
 }

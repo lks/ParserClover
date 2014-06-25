@@ -11,9 +11,9 @@ interface IParserService
    * The aim is to extract the high priority violation to have an overview of the refactoring task.
    * 
    * @param  array  $params Contained the metric to analyse, null if we want to analyse all metrics
-   * @return Boolean
+   * @return array of FileStats object
    */
-  public function populate($params = null);
+  public function mergeReport($params = null);
 
   /**
    * Parse the report of Clover and insert it in the database

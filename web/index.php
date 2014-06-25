@@ -222,28 +222,6 @@ $app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
   }
 });
 
-$app->get('/pmd', function () use ($app) {
-   try {
-    //$view = new FolderDesignDocument("../Couchdb");
-    $result = array();
-    $list = $app["parserService"]->parsePmdReport();
-    return $app['serializer']->serialize($list, 'json');
-  } catch (Exception $e) {
-    return $e->getMessage();
-  }
-});
-
-$app->get('/pmd', function () use ($app) {
-   try {
-    //$view = new FolderDesignDocument("../Couchdb");
-    $result = array();
-    $list = $app["parserService"]->parsePmdReport();
-    return $app['serializer']->serialize($list, 'json');
-  } catch (Exception $e) {
-    return $e->getMessage();
-  }
-});
-
 $app->get('/report', function () use ($app) {
    try {
     //$view = new FolderDesignDocument("../Couchdb");

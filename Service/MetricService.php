@@ -50,9 +50,10 @@ class MetricService
 		$this->parserService->createMetric($xml->project, $categories);
 	}
 
-	/**
+    /**
      * List all the document contained in the Database
      *
+     * @throws \Exception\NothingFoundException
      * @return Array with all Document Item
      */
 	public function listAll() {

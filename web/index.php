@@ -15,7 +15,7 @@ $app = new Silex\Application();
 
 //define the configuration for the couchDb tool
 $app['couchBdConfig'] = array(
-    'dbname' => 'clover',
+    'dbname' => 'improveQuality',
     'host' => '192.168.56.101'
 );
 
@@ -103,7 +103,7 @@ $app['metricService'] = $app->share(function ($app) {
  * @return  String to confirm that the data is loaded.
  */
 $app->get('/load', function () use ($app) {
-    //$app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
+    $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
     $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
     try {
         $view = new FolderDesignDocument("../Couchdb");

@@ -5,34 +5,50 @@ namespace Dao;
 /**
  * Generic Dao to do action on the given database
  */
-interface Dao
+interface IDao
 {
 	/**
 	 * Get a document with the given ID
 	 * 
-	 * @param  Int 	$id
+	 * @param  Int 	$name
 	 * 
 	 * @return Object
 	 */
-	public function get($id);
+	public function find($name);
 
 	/**
 	 * List documents with the given parameters. If no parameter is given, we will list all document
 	 * 
-	 * @param  Array $params 	Filter for the query
-	 * 
 	 * @return Array of Objects
 	 */
-	public function list($params = null);
+	public function listAll();
+
+    /**
+     * List all document with a filter on the type of the class
+     *
+     * @param $designDocument
+     * @param $type
+     * @return mixed
+     */
+    public function listByType($designDocument, $type);
+
+    /**
+     * List all documents with a filter on the bundle
+     *
+     * @param $designDocument
+     * @param $bundle
+     * @return mixed
+     */
+    public function listByBundle($designDocument, $bundle);
 
 	/**
 	 * Add or update a document with the given ID and the given content.
-	 * @param  Int 		$id
+	 * @param  Int 		$name
 	 * @param  Object 	$object
 	 * 
 	 * @return Object saved
 	 */
-	public function save($id, $object);
+	public function save($name, $object);
 
 	/**
 	 * Delete a document with the given ID.

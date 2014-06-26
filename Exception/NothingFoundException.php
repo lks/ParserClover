@@ -2,7 +2,7 @@
 
 namespace Exception;
 
-use Exception\Exception;
+use Exception;
 
 class NothingFoundException extends Exception {
 	

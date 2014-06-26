@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Service\MetricService;
 use Service\ParserService;
@@ -9,7 +9,6 @@ use Utility\DataManagementUtility;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\View\FolderDesignDocument;
 use Doctrine\CouchDB\View\DesignDocument;
-use JMS\Serializer\SerializerBuilder;
 use Symfony\Component\Finder\Finder;
 
 $app = new Silex\Application();
@@ -17,27 +16,27 @@ $app = new Silex\Application();
 //define the configuration for the couchDb tool
 $app['couchBdConfig'] = array(
     'dbname' => 'clover',
-    'host'   => '192.168.56.101'
-  );
+    'host' => '192.168.56.101'
+);
 
 $app['classCategories'] = array(
     'Controller' => 0,
-    'DAO'   => 0.85,
+    'DAO' => 0.85,
     'Entity' => 0.80,
     'Service' => 0.85,
     'Other' => 0.80,
     'Test' => 0,
     'Renderer' => 0,
     'Extension' => 0
-  );
+);
 
 // define our thresholds criterias
 $app['metricConfig'] = array(
-  'interval' => array (0.30, 0.50, 0.80, 1)
+    'interval' => array(0.30, 0.50, 0.80, 1)
 );
 
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
-    'monolog.logfile' => __DIR__.'/../log/development.log',
+    'monolog.logfile' => __DIR__ . '/../log/development.log',
 ));
 
 $app->register(new JMS\SerializerServiceProvider\SerializerServiceProvider(), array(
@@ -45,16 +44,16 @@ $app->register(new JMS\SerializerServiceProvider\SerializerServiceProvider(), ar
     'serializer.cache.directory' => '../cache'
 ));
 
-$app['couchDbWrapper'] =$app->share(function ($app) {
-  return new CouchDbWrapper();
+$app['couchDbWrapper'] = $app->share(function ($app) {
+    return new CouchDbWrapper();
 });
 
-$app['finder'] =$app->share(function ($app) {
-  return new Finder();
+$app['finder'] = $app->share(function ($app) {
+    return new Finder();
 });
 
-$app['dataManagementUtility'] =$app->share(function ($app) {
-  return new DataManagementUtility($app['monolog']);
+$app['dataManagementUtility'] = $app->share(function ($app) {
+    return new DataManagementUtility($app['monolog']);
 });
 
 /**
@@ -63,9 +62,9 @@ $app['dataManagementUtility'] =$app->share(function ($app) {
  * - couchDbClient: define our SGBD client,
  * - monolog: manage the log.
  */
-$app['couchDbClient'] =$app->share(function ($app) {
+$app['couchDbClient'] = $app->share(function ($app) {
 
-  return CouchDBClient::create($app['couchBdConfig']);
+    return CouchDBClient::create($app['couchBdConfig']);
 });
 
 /**
@@ -75,10 +74,10 @@ $app['couchDbClient'] =$app->share(function ($app) {
  * - monolog: manage the log.
  */
 $app['parserService'] = $app->share(function ($app) {
-  return new ParserService(
-          $app['monolog'],
-          $app['finder'],
-          $app['classCategories']);
+    return new ParserService(
+        $app['monolog'],
+        $app['finder'],
+        $app['classCategories']);
 });
 
 /**
@@ -89,10 +88,10 @@ $app['parserService'] = $app->share(function ($app) {
  * - monolog: manage the log.
  */
 $app['metricService'] = $app->share(function ($app) {
-  return new MetricService(
-          $app['parserService'],
-          $app['couchDbClient'],
-          $app['monolog']);
+    return new MetricService(
+        $app['parserService'],
+        $app['couchDbClient'],
+        $app['monolog']);
 });
 
 /**
@@ -103,17 +102,17 @@ $app['metricService'] = $app->share(function ($app) {
  *
  * @return  String to confirm that the data is loaded.
  */
-$app->get('/load', function() use($app) {
-  //$app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
-  $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
-  try {
-    $view = new FolderDesignDocument("../Couchdb");
-    $app['couchDbClient']->createDesignDocument("filters", $view);
-    $app["metricService"]->load();
-    return "The file has been loaded in the server";
-  } catch (Exception $e) {
-    return $e->getMessage();
-  }
+$app->get('/load', function () use ($app) {
+    //$app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
+    $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
+    try {
+        $view = new FolderDesignDocument("../Couchdb");
+        $app['couchDbClient']->createDesignDocument("filters", $view);
+        $app["metricService"]->load();
+        return "The file has been loaded in the server";
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
 });
 
 /**
@@ -135,19 +134,19 @@ $app->get('/load', function() use($app) {
  *                      "stat": [..., ..., ..., ...]
  *                     }
  */
-$app->get('/all', function() use($app) {
-  try {
-    $view = new FolderDesignDocument("../Couchdb");
-    $list = $app["metricService"]->listAll();
-    $listInterval = $app['dataManagementUtility']->groupByInterval($list['rows'], $app['metricConfig']['interval']);
-    $result = array();
-    $result['data'] = $list;
-    $result ['stat'] = $listInterval;
-    return json_encode($result);
+$app->get('/all', function () use ($app) {
+    try {
+        $view = new FolderDesignDocument("../Couchdb");
+        $list = $app["metricService"]->listAll();
+        $listInterval = $app['dataManagementUtility']->groupByInterval($list['rows'], $app['metricConfig']['interval']);
+        $result = array();
+        $result['data'] = $list;
+        $result ['stat'] = $listInterval;
+        return json_encode($result);
 
-  } catch (Exception $e) {
-    return $e->getMessage();
-  }
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
 });
 
 /**
@@ -175,18 +174,18 @@ $app->get('/all', function() use($app) {
  *                     }
  */
 $app->get('/type/{typeName}', function ($typeName) use ($app) {
-   try {
-    $view = new FolderDesignDocument("../Couchdb");
-    $list = $app["metricService"]->listByType($view, $typeName);
-    $listInterval = $app['dataManagementUtility']->groupByInterval($list, $app['metricConfig']['interval'], 'value');
-    $result = array();
-    $result['data'] = $list;
-    $result ['stat'] = $listInterval;
-    return json_encode($result);
+    try {
+        $view = new FolderDesignDocument("../Couchdb");
+        $list = $app["metricService"]->listByType($view, $typeName);
+        $listInterval = $app['dataManagementUtility']->groupByInterval($list, $app['metricConfig']['interval'], 'value');
+        $result = array();
+        $result['data'] = $list;
+        $result ['stat'] = $listInterval;
+        return json_encode($result);
 
-  } catch (Exception $e) {
-    return $e->getMessage();
-  }
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
 });
 
 /**
@@ -213,24 +212,24 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
  *                     }
  */
 $app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
-   try {
-    $view = new FolderDesignDocument("../Couchdb");
-    $list = $app["metricService"]->listByBundle($view, $bundleName);
-    return json_encode($list);
-  } catch (Exception $e) {
-    return $e->getMessage();
-  }
+    try {
+        $view = new FolderDesignDocument("../Couchdb");
+        $list = $app["metricService"]->listByBundle($view, $bundleName);
+        return json_encode($list);
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
 });
 
 $app->get('/report', function () use ($app) {
-   try {
-    //$view = new FolderDesignDocument("../Couchdb");
-    $result = array();
-    $list = $app["parserService"]->mergeReport();
-    return $app['serializer']->serialize($list, 'json');
-  } catch (Exception $e) {
-    return $e->getMessage();
-  }
+    try {
+        //$view = new FolderDesignDocument("../Couchdb");
+        $result = array();
+        $list = $app["parserService"]->mergeReport();
+        return $app['serializer']->serialize($list, 'json');
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
 });
 
 $app->run();

@@ -29,25 +29,26 @@ class Dao
 		return $document;
 	}
 
-	/**
-	 * List documents with the given parameters. If no parameter is given, we will list all document
-	 * 
-	 * @param  Array $params 	Filter for the query
-	 * 
-	 * @return Array of Objects
-	 */
+    /**
+     * List documents with the given parameters. If no parameter is given, we will list all document
+     *
+     * @internal param Array $params Filter for the query
+     *
+     * @return Array of Objects
+     */
 	public function list($params = null) {
 
 		return null;
 	}
 
-	/**
-	 * Add or update a document with the given ID and the given content.
-	 * @param  Int 		$id
-	 * @param  Object 	$object
-	 * 
-	 * @return Object saved
-	 */
+    /**
+     * Add or update a document with the given ID and the given content.
+     * @param $name
+     * @param  Object $object
+     *
+     * @internal param Int $id
+     * @return Object saved
+     */
 	public function save($name, $object) {
 		try {
 			$document = $this->find($name);	
@@ -59,12 +60,12 @@ class Dao
 		return $document;
 	}
 
-	/**
-	 * Delete a document with the given ID.
-	 * @param  Int 		$id
-	 * 
-	 * @return 
-	 */
+    /**
+     * Delete a document with the given ID.
+     * @param  Int $id
+     *
+     * @return void
+     */
 	public function delete($id) {
 
 	}

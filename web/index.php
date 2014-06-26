@@ -58,7 +58,7 @@ $app['dataManagementUtility'] =$app->share(function ($app) {
 });
 
 /**
- * Used to get and to insert in Database the files associate their metrics. 
+ * Used to get and to insert in Database the files associate their metrics.
  * This service needs as dependencies:
  * - couchDbClient: define our SGBD client,
  * - monolog: manage the log.
@@ -69,20 +69,20 @@ $app['couchDbClient'] =$app->share(function ($app) {
 });
 
 /**
- * Used to get and to insert in Database the files associate their metrics. 
+ * Used to get and to insert in Database the files associate their metrics.
  * This service needs as dependencies:
  * - couchDbClient: define our SGBD client,
  * - monolog: manage the log.
  */
 $app['parserService'] = $app->share(function ($app) {
   return new ParserService(
-          $app['monolog'], 
+          $app['monolog'],
           $app['finder'],
           $app['classCategories']);
 });
 
 /**
- * Define the Metrics Service as a shared service. This service will manage all the metrics actions 
+ * Define the Metrics Service as a shared service. This service will manage all the metrics actions
  * management. This service needs as dependencies:
  * - ParserService: get the metrics for a given file,
  * - couchDbClient: define our SGBD client,
@@ -98,7 +98,7 @@ $app['metricService'] = $app->share(function ($app) {
 /**
  * Load Service manage the deletion of the Database and launch the genration of data on the DB.
  * This service will also load the map/reduce configuration.
- * 
+ *
  * @throws Eception If an error occured during the loading phase.
  *
  * @return  String to confirm that the data is loaded.
@@ -131,7 +131,7 @@ $app->get('/load', function() use($app) {
  *                            object serialized...
  *                          }
  *                        },
- *                      ], 
+ *                      ],
  *                      "stat": [..., ..., ..., ...]
  *                     }
  */
@@ -153,11 +153,11 @@ $app->get('/all', function() use($app) {
 /**
  * Type service allow us to get the metrics for a given type of Classes. A type of class can be:
  *    - Controller,
- *    - Service, 
- *    - DAO, 
+ *    - Service,
+ *    - DAO,
  *      - Entity,
  *      - Exception.
- * 
+ *
  * @throws Exception If an error occured during the getting of the files metrics.
  *
  * @return Json object with the following formation:
@@ -170,7 +170,7 @@ $app->get('/all', function() use($app) {
  *                            object serialized...
  *                          }
  *                        },
- *                      ], 
+ *                      ],
  *                      "stat": [..., ..., ..., ...]
  *                     }
  */
@@ -195,7 +195,7 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
  *    - ProfileBundle,
  *    - SecurityBundle,
  *    - ...
- * 
+ *
  * @throws Exception If an error occured during the getting of the files metrics.
  *
  * @return Json object with the following formation:
@@ -208,7 +208,7 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
  *                            object serialized...
  *                          }
  *                        },
- *                      ], 
+ *                      ],
  *                      "stat": [..., ..., ..., ...]
  *                     }
  */

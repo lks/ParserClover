@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Dao\Dao;
 use Service\MetricService;
 use Service\ParserService;
 use Utility\CouchDbWrapper;
@@ -67,6 +68,11 @@ $app['couchDbClient'] = $app->share(function ($app) {
     return CouchDBClient::create($app['couchBdConfig']);
 });
 
+$app['dao'] = $app->share(function ($app) {
+
+    return new Dao($app['couchDbClient']);
+});
+
 /**
  * Used to get and to insert in Database the files associate their metrics.
  * This service needs as dependencies:
@@ -77,7 +83,8 @@ $app['parserService'] = $app->share(function ($app) {
     return new ParserService(
         $app['monolog'],
         $app['finder'],
-        $app['classCategories']);
+        $app['classCategories'],
+        $app['dao']);
 });
 
 /**
@@ -103,7 +110,7 @@ $app['metricService'] = $app->share(function ($app) {
  * @return  String to confirm that the data is loaded.
  */
 $app->get('/load', function () use ($app) {
-    $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
+    // $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
     $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
     try {
         $view = new FolderDesignDocument("../Couchdb");

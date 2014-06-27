@@ -1,6 +1,8 @@
 <?php
 namespace Service;
 
+use Dao\Dao;
+use Doctrine\CouchDB\HTTP\HTTPException;
 use Entity\FileMetric;
 use Entity\PmdMetric;
 use Entity\FileStats;
@@ -12,20 +14,23 @@ class ParserService
     protected $monolog;
     protected $finder;
     protected $categories;
+    protected $dao;
 
-    public function __construct($monolog, $finder, $categories)
+    public function __construct($monolog, $finder, $categories, Dao $dao)
     {
         $this->monolog = $monolog;
         $this->finder = $finder;
         $this->categories = $categories;
+        $this->dao = $dao;
     }
 
     /**
      * Create a metric for each child. It's recursive method to explore all xml node
      *
-     * @param child     Xml Node: Xml node to explore
+     * @param Xml $child
      * @param categories  Categories to search in the namespace of the classes
      *
+     * @internal param \Service\Xml $child Node: Xml node to explore
      * @return true     if all are ok.
      */
     public function createMetric($child, $categories)
@@ -94,15 +99,22 @@ class ParserService
                 $nbViolationsPhpUnit++;
             }
             array_push($data, $value);
+            //save in database
+            $this->dao->save($value->getName(), $value);
+
 
             //Delete the row added in the origin array
             unset($phpunitResult[$key]);
             array_values($phpunitResult);
         }
 
+        // add files for the only code coverage violation
         foreach ($phpunitResult as $value) {
             array_push($data, $value);
             $nbViolationsPhpUnit++;
+
+            //save in database
+            $this->dao->save($value->getName(), $value);
         }
 
         $result = array();
@@ -118,6 +130,7 @@ class ParserService
     /**
      * Parse the report of Clover and insert it in the database
      *
+     * @throws \Exception\NoPmdDataException
      * @return List of vialation inserted in the database
      */
     public function parsePhpUnitReport()
@@ -201,6 +214,7 @@ class ParserService
     /**
      * Parse the report of Pmd and insert it in the database
      *
+     * @throws \Exception\NoPmdDataException
      * @return List of vialation inserted in the database
      */
     public function parsePmdReport()
@@ -228,8 +242,6 @@ class ParserService
                 $name = '';
                 foreach ($file->children() as $violation) {
                     foreach ($violation->attributes() as $a => $b) {
-                        //echo $a,'="',$b,"\"<br />";
-
                         if ($a == "class" && $name == '') {
                             $name = '' . $b;
                             $type = $this->getType($name);

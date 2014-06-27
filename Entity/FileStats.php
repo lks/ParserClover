@@ -5,34 +5,34 @@ namespace Entity;
 
 class FileStats
 {
-  /* Name of the file */
+    /* Name of the file */
 
-  protected $name;
+    protected $name;
 
-  /* Name of the namespace of the file */
+    /* Name of the namespace of the file */
 
-  protected $namespace;
+    protected $namespace;
 
-  /* Array contained the number of the violation by type */
+    /* Array contained the number of the violation by type */
 
-  protected $violations;
+    protected $violations;
 
-  /* Type of class */
+    /* Type of class */
 
-  protected $type;
+    protected $type;
 
-   /* bundle of class */
+    /* bundle of class */
 
-  protected $bundle;
+    protected $bundle;
 
-  public function __construct($name, $namespace, $violations, $type, $bundle) 
-  {
-    $this->name = $name;
-    $this->namespace = $namespace;
-    $this->violations = $violations;
-    $this->type = $type;
-    $this->bundle = $bundle;
-  }
+    public function __construct($name, $namespace, $violations, $type, $bundle)
+    {
+        $this->name = $name;
+        $this->namespace = $namespace;
+        $this->violations = $violations;
+        $this->type = $type;
+        $this->bundle = $bundle;
+    }
 
     /**
      * Gets the value of name.
@@ -43,11 +43,11 @@ class FileStats
     {
         return $this->name;
     }
-    
+
     /**
      * Sets the value of name.
      *
-     * @param mixed $name the name 
+     * @param mixed $name the name
      *
      * @return self
      */
@@ -67,11 +67,11 @@ class FileStats
     {
         return $this->namespace;
     }
-    
+
     /**
      * Sets the value of namespace.
      *
-     * @param mixed $namespace the namespace 
+     * @param mixed $namespace the namespace
      *
      * @return self
      */
@@ -91,11 +91,11 @@ class FileStats
     {
         return $this->violations;
     }
-    
+
     /**
      * Sets the value of violations.
      *
-     * @param mixed $violations the violations 
+     * @param mixed $violations the violations
      *
      * @return self
      */
@@ -115,11 +115,11 @@ class FileStats
     {
         return $this->type;
     }
-    
+
     /**
      * Sets the value of type.
      *
-     * @param mixed $type the type 
+     * @param mixed $type the type
      *
      * @return self
      */
@@ -139,11 +139,11 @@ class FileStats
     {
         return $this->bundle;
     }
-    
+
     /**
      * Sets the value of bundle.
      *
-     * @param mixed $bundle the bundle 
+     * @param mixed $bundle the bundle
      *
      * @return self
      */

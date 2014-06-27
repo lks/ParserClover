@@ -61,14 +61,19 @@ class Dao implements IDao
     public function save($name, $object)
     {
         try {
-            //the target document doesn't exist, so we have to create one
-            $document = $this->find($name);
-            $document = $this->$bdClient->putDocument((array)$object, $name, $document->body['_rev']);
-        } catch (NotFoundException $e) {
-            $document = $this->$bdClient->postDocument((array)$object);
+            try {
+                //the target document doesn't exist, so we have to create one
+                $document = $this->find($name);
+                $document = $this->$bdClient->putDocument((array)$object, $name, $document->body['_rev']);
+            } catch (NotFoundException $e) {
+                $document = $this->$bdClient->postDocument((array)$object);
+            }
+        } catch (HTTPException $e) {
+            $this->monolog->addDebug("An exception has occured : ".$e->getMessage());
+            return null;
         }
-
         return $document;
+
     }
 
     /**

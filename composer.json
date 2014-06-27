@@ -1,29 +1,30 @@
 {
-  "name": "lks/parser-clover",
-  "description": "App to parse a clover file",
-  "keywords": ["clover","parse"],
-  "type": "symfony-app",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Joris Calabrese",
-      "email": "joris.calabrese@gmail.com"
-    }
-  ],
-  "require": {
-    "silex/silex": "~1.1",
-    "monolog/monolog": ">=1.0.0",
-    "doctrine/couchdb": "1.0.*@dev",
-    "jms/serializer-service-provider": "dev-develop",
-    "symfony/finder": "2.3.*@dev"
-  },
+    "name": "lks/parser-clover",
+    "description": "App to parse a clover file",
+    "keywords": ["clover", "parse"],
+    "type": "symfony-app",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Joris Calabrese",
+            "email": "joris.calabrese@gmail.com"
+        }
+    ],
+    "require": {
+        "silex/silex": "~1.1",
+        "monolog/monolog": ">=1.0.0",
+        "doctrine/couchdb": "1.0.*@dev",
+        "jms/serializer-service-provider": "dev-develop",
+        "symfony/finder": "2.3.*@dev"
+    },
 
-  "autoload": {
-    "psr-4": {
-       "Service\\": "Service/",
-       "Entity\\": "Entity/",
-       "Exception\\": "Exception/",
-       "Utility\\": "Utility/"
+    "autoload": {
+        "psr-4": {
+            "Service\\": "Service/",
+            "Entity\\": "Entity/",
+            "Exception\\": "Exception/",
+            "Utility\\": "Utility/",
+            "Dao\\": "Dao/"
+        }
     }
-  }
 }

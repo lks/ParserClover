@@ -5,14 +5,17 @@ namespace Dao;
 use Exception\NotFoundException;
 use Exception\NothingFoundException;
 use Doctrine\CouchDB\CouchDBClient;
+use Monolog\Logger;
 
 class Dao implements IDao
 {
     protected $bdClient;
+    protected $logger;
 
-    public function __construct(CouchDBClient $bdClient)
+    public function __construct(CouchDBClient $bdClient, Logger $logger)
     {
         $this->bdClient = $bdClient;
+        $this->logger = $logger;
     }
 
     /**
@@ -60,16 +63,18 @@ class Dao implements IDao
      */
     public function save($name, $object)
     {
+        $this->logger->addDebug("[DAO] Save the object : ".$name);
         try {
             try {
                 //the target document doesn't exist, so we have to create one
                 $document = $this->find($name);
-                $document = $this->$bdClient->putDocument((array)$object, $name, $document->body['_rev']);
+                $document = $this->bdClient->putDocument((array)$object, $name, $document->body['_rev']);
             } catch (NotFoundException $e) {
-                $document = $this->$bdClient->postDocument((array)$object);
+                $this->logger->addDebug("[DAO] Object not found : ".$name);
+                $document = $this->bdClient->postDocument((array)$object);
             }
         } catch (HTTPException $e) {
-            $this->monolog->addDebug("An exception has occured : ".$e->getMessage());
+            $this->logger->addDebug("An exception has occured : ".$e->getMessage());
             return null;
         }
         return $document;

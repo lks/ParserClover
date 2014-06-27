@@ -16,7 +16,7 @@ $app = new Silex\Application();
 
 //define the configuration for the couchDb tool
 $app['couchBdConfig'] = array(
-    'dbname' => 'improveQuality',
+    'dbname' => 'improve-quality',
     'host' => '192.168.56.101'
 );
 
@@ -70,7 +70,7 @@ $app['couchDbClient'] = $app->share(function ($app) {
 
 $app['dao'] = $app->share(function ($app) {
 
-    return new Dao($app['couchDbClient']);
+    return new Dao($app['couchDbClient'], $app['monolog']);
 });
 
 /**
@@ -231,6 +231,7 @@ $app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
 $app->get('/report', function () use ($app) {
     try {
         //$view = new FolderDesignDocument("../Couchdb");
+        $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
         $result = array();
         $list = $app["parserService"]->mergeReport();
         return $app['serializer']->serialize($list, 'json');

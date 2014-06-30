@@ -7,12 +7,16 @@
 	<tr>
 		<th>Class Name</th>
 		<th>Type</th>
+        <th>Bundle</th>
+        <th>Namespace</th>
 		<th>Nb Pmd violation</th>
 		<th>PhpUnit rate</th>
 	</tr>
 	<tr ng-repeat="item in list">
 		<td>{{ item.name }}</td>
 		<td>{{ item.type }}</td>
+        <td>{{ item.bundle }}</td>
+        <td>{{ item.namespace }}</td>
 		<td>{{ item.violations.pmd }}</td>
 		<td>{{ item.violations.phpunit }}</td>
 	</tr>

@@ -7,6 +7,7 @@ use Entity\FileMetric;
 use Entity\PmdMetric;
 use Entity\FileStats;
 use Exception\NoPmdDataException;
+use Utility\PhpUnitItem;
 
 
 class ParserService
@@ -22,57 +23,6 @@ class ParserService
         $this->finder = $finder;
         $this->categories = $categories;
         $this->dao = $dao;
-    }
-
-    /**
-     * Create a metric for each child. It's recursive method to explore all xml node
-     *
-     * @param Xml $child
-     * @param categories  Categories to search in the namespace of the classes
-     *
-     * @internal param \Service\Xml $child Node: Xml node to explore
-     * @return true     if all are ok.
-     */
-    public function createMetric($child, $categories)
-    {
-        $this->monolog->addDebug("Begin the treatement...");
-        if (count($child->children()) > 0) {
-            foreach ($child->children() as $newChild) {
-                if ('package' == $newChild->getName()) {
-                    $results = $this->createMetric($newChild, $categories);
-                } else if ('file' == $newChild->getName()) {
-
-                    if ($newChild->class['name'] != "") {
-                        $this->monolog->addDebug(
-                            sprintf("Create file metric '%s' ", $newChild->class['name']));
-                        $class = $newChild->class;
-                        $metrics = $newChild->metrics;
-                        $fileMetric = new FileMetric($class, $metrics);
-                        $isFound = false;
-
-                        foreach ($categories as $category) {
-                            if (preg_match("#" . $category . "$#", $newChild->class['name'])) {
-                                $fileMetric->type = $category;
-                                $isFound = true;
-                                break;
-                            }
-                        }
-                        if (!$isFound) {
-                            $fileMetric->type = "Other";
-                        }
-
-                        $fileMetric = $this->setBundle($fileMetric);
-
-                        $theDocument = $this->couchDbClient->findDocument($fileMetric->name);
-                        if ($theDocument != null && $theDocument->status != 404) {
-                            $this->couchDbClient->putDocument((array)$fileMetric, $fileMetric->name, $theDocument->body['_rev']);
-                        } else {
-                            $this->couchDbClient->postDocument((array)$fileMetric);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -153,58 +103,15 @@ class ParserService
             $filenodes = $nodes->children();
             if (isset($filenodes)) {
                 foreach ($filenodes as $file) {
-                    //TODO get category value
-                    $type = "";
-                    $priority = 0;
-                    $namespace = '';
-                    $name = '';
-                    $isToBeFixed = false;
-                    $violation = array();
-                    $nbExecutable = 0;
-                    $nbExecuted = 0;
-                    //determine if we have to log this file
-                    foreach ($file->children() as $node) {
-
-                        if ('class' == $node->getName()) {
-                            foreach ($node->attributes() as $key => $value) {
-                                if ($key == 'name') {
-                                    $name = '' . $value;
-                                    $type = $this->getType($name);
-                                }
-                            }
-                        } else if ('totals' == $node->getName()) {
-
-                            foreach ($node->children() as $result) {
-                                if ('lines' == $result->getName()) {
-                                    foreach ($result->attributes() as $key => $value) {
-                                        if ($key == 'executable') {
-                                            $nbExecutable = $value;
-                                        } elseif ($key == 'executed') {
-                                            $nbExecuted = $value;
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-
-                    } //end of the node of a file
-                    if (isset($nbExecutable) && $nbExecutable > 0) {
-                        $average = $nbExecuted / $nbExecutable;
-                        //TODO filter by type
-                        if ($average < $this->categories[$type]) {
-                            $violation['phpunit'] = $average;
-                            $isToBeFixed = true;
-
-                        }
-                    } else {
-                        $violation['phpunit'] = 0;
-                        $isToBeFixed = true;
-                    }
-                    if ($isToBeFixed) {
-                        $results[$name] = new FileStats($name, $namespace, $violation, $type, "");
-                    }
-                } //end of the file parcours
+                    $item = new PhpUnitItem($filenodes);
+                    $results[$name] = new FileStats(
+                        $item->getClassName(),
+                        $item->getNamespace(),
+                        $item->getStats(),
+                        $item->getTypeName(),
+                        $item->getBundleName()
+                    );
+                }
             }
         }
         return $results;
@@ -238,7 +145,7 @@ class ParserService
                 //TOD get bundle value
                 //$bundle = $this->getBundle($file['name']);
                 $priority = 0;
-                $namespace = '';
+                $namespace = $bundle = null;
                 $name = '';
                 foreach ($file->children() as $violation) {
                     foreach ($violation->attributes() as $a => $b) {
@@ -247,15 +154,15 @@ class ParserService
                             $type = $this->getType($name);
                         } elseif ($a == "package" && !isset($namespace)) {
                             $namespace = $b;
+                            $bundle = $this->getBundle($b);
                         } elseif ($a == "priority" && $b >= 1) {
-
                             $priority++;
                         }
                     }
                 }
                 $violation = array();
                 $violation['pmd'] = $priority;
-                $result[$name] = new FileStats($name, $namespace, $violation, $type, "");
+                $result[$name] = new FileStats($name, $namespace, $violation, $type, $bundle);
             }
         }
 
@@ -265,6 +172,7 @@ class ParserService
     /**
      * Init the array from the file content (XML format)
      *
+     * @param $filepath
      * @return List of vialation by typology.
      */
     private function fileXmlToArray($filepath)
@@ -297,13 +205,13 @@ class ParserService
     /**
      * Get the Bundle name from the filename of a class
      *
-     * @param  $filename Name and path of the file we want to extract the bundle
+     * @param  $filename String name and path of the file we want to extract the bundle
      *
      * @return String Bundle associated to the filename
      */
     private function getBundle($filename)
     {
-        if (preg_match("#[/]{1}[A-Za-z]{1,100}Bundle#",
+        if (preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#",
             $filename,
             $bundle,
             PREG_OFFSET_CAPTURE)
@@ -311,31 +219,6 @@ class ParserService
             return $bundle[0][0];
         }
         return null;
-    }
-
-    /**
-     * Get the Type name from the class name
-     *
-     * @param  $className Name of the class
-     *
-     * @return String Type associated to the class name
-     */
-    private function getType($className)
-    {
-        $type = '';
-        $isFound = false;
-        $categories = $this->categories;
-        foreach ($categories as $key => $value) {
-            if (preg_match("#" . $key . "$#", $className)) {
-                $type = $key;
-                $isFound = true;
-                break;
-            }
-        }
-        if (!$isFound) {
-            $type = "Other";
-        }
-        return $type;
     }
 
     /**
@@ -347,33 +230,39 @@ class ParserService
      *
      * @param  FileStats $a
      * @param  FileStats $b
-     * @return 0, if equals. 1, if $a is superior, -1 else.
+     * @return int 0, if equals. 1, if $a is superior, -1 else.
      */
     public function sortMergeReport($a, $b)
     {
         $aPmd = 0;
-        $aPhpUnit = 1;
         $bPmd = 0;
-        $bPhpUnit = 1;
-        $aViolations = $a->getViolations();
-        $bViolations = $b->getViolations();
 
-        if (isset($aViolations['pmd'])) {
-            $aPmd = $aViolations['pmd'];
-        }
-        if (isset($aViolations['phpunit'])) {
-            $aPhpUnit = $aViolations['phpunit'];
-        }
-        if (isset($bViolations['pmd'])) {
-            $bPmd = $bViolations['pmd'];
-        }
-        if (isset($bViolations['phpunit'])) {
-            $bPhpUnit = $bViolations['phpunit'];
-        }
-        if ($aPmd == $bPmd) {
-            return 0;
-        }
         return ($aPmd < $bPmd) ? 1 : -1;
+    }
+
+    /**
+     * Get the Type name from the class name
+     *
+     * @param  $className String name of the class
+     *
+     * @internal param $categories
+     * @return String Type associated to the class name
+     */
+    private function getType($className)
+    {
+        $type = '';
+        $isFound = false;
+        foreach ($this->categories as $key => $value) {
+            if (preg_match("#" . $key . "$#", $className)) {
+                $type = $key;
+                $isFound = true;
+                break;
+            }
+        }
+        if (!$isFound) {
+            $type = "Other";
+        }
+        return $type;
     }
 
 }

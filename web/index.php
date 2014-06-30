@@ -102,27 +102,6 @@ $app['metricService'] = $app->share(function ($app) {
 });
 
 /**
- * Load Service manage the deletion of the Database and launch the genration of data on the DB.
- * This service will also load the map/reduce configuration.
- *
- * @throws Eception If an error occured during the loading phase.
- *
- * @return  String to confirm that the data is loaded.
- */
-$app->get('/load', function () use ($app) {
-    // $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
-    $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
-    try {
-        $view = new FolderDesignDocument("../Couchdb");
-        $app['couchDbClient']->createDesignDocument("filters", $view);
-        $app["metricService"]->load();
-        return "The file has been loaded in the server";
-    } catch (Exception $e) {
-        return $e->getMessage();
-    }
-});
-
-/**
  * All service will get all the files metrics and the statistics associated.
  *
  * @throws Exception If an error occured during the getting of the files metrics.
@@ -231,6 +210,7 @@ $app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
 $app->get('/report', function () use ($app) {
     try {
         //$view = new FolderDesignDocument("../Couchdb");
+        $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
         $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
         $result = array();
         $list = $app["parserService"]->mergeReport();

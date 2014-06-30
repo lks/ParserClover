@@ -210,8 +210,8 @@ $app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
 $app->get('/report', function () use ($app) {
     try {
         //$view = new FolderDesignDocument("../Couchdb");
-        $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
-        $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
+        //$app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
+        //$app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
         $result = array();
         $list = $app["parserService"]->mergeReport();
         return $app['serializer']->serialize($list, 'json');

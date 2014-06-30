@@ -200,7 +200,10 @@ class PhpUnitItem {
 
     public function getStats()
     {
-        $result
+        $result = array();
+        $result['lineAverage'] = $this->lineAverage;
+        $result['methodAverage'] = $this->methodAverage;
+        return $result;
     }
 
 } 

@@ -68,6 +68,10 @@ class Dao implements IDao
             try {
                 //the target document doesn't exist, so we have to create one
                 $document = $this->find($name);
+                if($document == null) {
+                    $this->logger->addDebug("[DAO] Document null");
+                }
+
                 $document = $this->bdClient->putDocument((array)$object, $name, $document->body['_rev']);
             } catch (NotFoundException $e) {
                 $this->logger->addDebug("[DAO] Object not found : ".$name);

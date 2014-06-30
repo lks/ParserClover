@@ -104,7 +104,8 @@ class ParserService
             if (isset($filenodes)) {
                 foreach ($filenodes as $file) {
                     $item = new PhpUnitItem($filenodes);
-                    $results[$name] = new FileStats(
+                    $this->monolog->addDebug("Save object in Merge : ".$item->getClassName());
+                    $results[$item->getClassName()] = new FileStats(
                         $item->getClassName(),
                         $item->getNamespace(),
                         $item->getStats(),

@@ -232,7 +232,6 @@ $app->get('/report', function () use ($app) {
         //$view = new FolderDesignDocument("../Couchdb");
         $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
         $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
-        $result = array();
         $list = $app["parserService"]->mergeReport();
         return $app['serializer']->serialize($list, 'json');
     } catch (Exception $e) {

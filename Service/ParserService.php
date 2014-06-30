@@ -156,7 +156,8 @@ class ParserService
                     //TODO get category value
                     $type = "";
                     $priority = 0;
-                    $namespace = '';
+                    $namespace = null;
+                    $bundle = null;
                     $name = '';
                     $isToBeFixed = false;
                     $violation = array();
@@ -170,6 +171,18 @@ class ParserService
                                 if ($key == 'name') {
                                     $name = '' . $value;
                                     $type = $this->getType($name);
+                                    //get the namespace
+                                    foreach ($node->children() as $item) {
+                                        if('namespace' == $item->getName()) {
+                                            foreach ($item->attributes() as $key1 => $value1) {
+                                                if($key1 == 'name') {
+                                                    $namespace = ''.$value1[0];
+                                                    $bundle = $this->getBundle($value1);
+                                                }
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
                         } else if ('totals' == $node->getName()) {
@@ -202,7 +215,7 @@ class ParserService
                         $isToBeFixed = true;
                     }
                     if ($isToBeFixed) {
-                        $results[$name] = new FileStats($name, $namespace, $violation, $type, "");
+                        $results[$name] = new FileStats($name, $namespace, $violation, $type, $bundle);
                     }
                 } //end of the file parcours
             }
@@ -235,10 +248,9 @@ class ParserService
             foreach ($fileNodes as $file) {
                 //TODO get category value
                 $type = "";
-                //TOD get bundle value
-                //$bundle = $this->getBundle($file['name']);
                 $priority = 0;
-                $namespace = '';
+                $namespace = null;
+                $bundle = null;
                 $name = '';
                 foreach ($file->children() as $violation) {
                     foreach ($violation->attributes() as $a => $b) {
@@ -246,16 +258,16 @@ class ParserService
                             $name = '' . $b;
                             $type = $this->getType($name);
                         } elseif ($a == "package" && !isset($namespace)) {
-                            $namespace = $b;
+                            $namespace = ''.$b;
+                            $bundle = $this->getBundle($namespace);
                         } elseif ($a == "priority" && $b >= 1) {
-
                             $priority++;
                         }
                     }
                 }
                 $violation = array();
                 $violation['pmd'] = $priority;
-                $result[$name] = new FileStats($name, $namespace, $violation, $type, "");
+                $result[$name] = new FileStats($name, $namespace, $violation, $type, $bundle);
             }
         }
 
@@ -303,7 +315,7 @@ class ParserService
      */
     private function getBundle($filename)
     {
-        if (preg_match("#[/]{1}[A-Za-z]{1,100}Bundle#",
+        if (preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#",
             $filename,
             $bundle,
             PREG_OFFSET_CAPTURE)

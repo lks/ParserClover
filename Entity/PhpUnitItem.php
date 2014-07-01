@@ -6,15 +6,18 @@
  * Time: 15:56
  */
 
-namespace Utility;
+namespace Entity;
 
 
-class PhpUnitItem {
+use Utility\UtilityXml;
+
+class PhpUnitItem
+{
 
     protected $className;
     protected $namespace;
     protected $bundleName;
-    protected $type;
+    protected $typeName;
     protected $lineAverage;
     protected $methodAverage;
 
@@ -23,7 +26,7 @@ class PhpUnitItem {
         foreach ($listNodes as $node) {
             if ('class' == $node->getName()) {
                 $this->setClassInformation($node, $categories);
-            } else if('totals' == $node->getName()) {
+            } else if ('totals' == $node->getName()) {
                 $this->setStatInformation($node);
             }
         }
@@ -39,10 +42,16 @@ class PhpUnitItem {
      */
     public function setClassInformation($classNode, $categories)
     {
-        echo "dans setClassInformation";
         foreach ($classNode->attributes() as $key => $value) {
             if ($key == 'name') {
                 $this->className = '' . $value;
+                $this->typeName = $this->getType($value, $categories);
+            }
+        }
+        foreach ($classNode->children() as $result) {
+            if ('namespace' == $result->getName()) {
+                $this->namespace = UtilityXml::getAttribute('name', $result);
+                $this->bundleName = UtilityXml::getBundle($this->namespace);
             }
         }
     }
@@ -52,9 +61,9 @@ class PhpUnitItem {
         foreach ($statNode->children() as $result) {
             //define the line average coverage for the given class
             if ('lines' == $result->getName()) {
-                $this->lineAverage = $this->computeAverage($result->attributes());
+                $this->lineAverage = $this->computeLineAverage($result->attributes());
             } else if ('methods' == $result->getName()) {
-                $this->methodAverage = $this->computeAverage($result->attributes());
+                $this->methodAverage = $this->computeMethodAverage($result->attributes());
             }
         }
     }
@@ -85,7 +94,7 @@ class PhpUnitItem {
     }
 
 
-    private function computeAverage($attributes)
+    private function computeLineAverage($attributes)
     {
         $nbExecutable = 0;
         $nbExecuted = 0;
@@ -96,7 +105,24 @@ class PhpUnitItem {
                 $nbExecuted = $value;
             }
         }
-        if($nbExecutable > 0) {
+        if ($nbExecutable > 0) {
+            return $nbExecuted / $nbExecutable;
+        }
+        return null;
+    }
+
+    private function computeMethodAverage($attributes)
+    {
+        $nbExecutable = 0;
+        $nbExecuted = 0;
+        foreach ($attributes as $key => $value) {
+            if ($key == 'count') {
+                $nbExecutable = $value;
+            } elseif ($key == 'tested') {
+                $nbExecuted = $value;
+            }
+        }
+        if ($nbExecutable > 0) {
             return $nbExecuted / $nbExecutable;
         }
         return null;
@@ -185,9 +211,9 @@ class PhpUnitItem {
     /**
      * @param mixed $type
      */
-    public function setTypeName($type)
+    public function setTypeName($typeName)
     {
-        $this->type = $type;
+        $this->typeName = $typeName;
     }
 
     /**
@@ -195,7 +221,7 @@ class PhpUnitItem {
      */
     public function getTypeName()
     {
-        return $this->type;
+        return $this->typeName;
     }
 
     public function getStats()
@@ -203,7 +229,7 @@ class PhpUnitItem {
         $result = array();
         $result['lineAverage'] = $this->lineAverage;
         $result['methodAverage'] = $this->methodAverage;
-        return $result;
+        return array('phpUnit', $result);
     }
 
 } 

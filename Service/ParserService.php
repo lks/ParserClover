@@ -2,12 +2,10 @@
 namespace Service;
 
 use Dao\Dao;
-use Doctrine\CouchDB\HTTP\HTTPException;
-use Entity\FileMetric;
-use Entity\PmdMetric;
+use Entity\PmdItem;
 use Entity\FileStats;
 use Exception\NoPmdDataException;
-use Utility\PhpUnitItem;
+use Entity\PhpUnitItem;
 
 
 class ParserService
@@ -42,29 +40,29 @@ class ParserService
         $phpunitResult = $this->parsePhpUnitReport();
 
         foreach ($pmdResult as $key => $value) {
-            $nbViolationsPmd += $value->getViolations()['pmd'];
-            if (isset($phpunitResult[$key])) {
-                //let's go to merge result
-                $value->setViolations(array_merge($value->getViolations(), $phpunitResult[$key]->getViolations()));
-                $nbViolationsPhpUnit++;
-            }
-            array_push($data, $value);
-            //save in database
-            $this->dao->save($value->getName(), $value);
+                $nbViolationsPmd += $value->getStats()['pmd'];
+                if (isset($phpunitResult[$key])) {
+                    //let's go to merge result
+                    $value->setStats(array_merge($value->getStats(), $phpunitResult[$key]->getStats()));
+                    $nbViolationsPhpUnit++;
+                }
+                array_push($data, $value);
+                //save in database
+                $this->dao->save($value->getName(), $value);
 
 
-            //Delete the row added in the origin array
-            unset($phpunitResult[$key]);
-            array_values($phpunitResult);
+                //Delete the row added in the origin array
+                unset($phpunitResult[$key]);
+                array_values($phpunitResult);
         }
 
         // add files for the only code coverage violation
         foreach ($phpunitResult as $value) {
-            array_push($data, $value);
-            $nbViolationsPhpUnit++;
+                array_push($data, $value);
+                $nbViolationsPhpUnit++;
 
-            //save in database
-            $this->dao->save($value->getName(), $value);
+                //save in database
+                $this->dao->save($value->getName(), $value);
         }
 
         $result = array();
@@ -103,9 +101,10 @@ class ParserService
             $fileNodes = $nodes->children();
             if (isset($fileNodes)) {
                 foreach ($fileNodes as $file) {
-                    $item = new PhpUnitItem($file);
+                    $item = new PhpUnitItem($file, $this->categories);
                     $this->monolog->addDebug("Save object in Merge : ".$item->getClassName());
-                    $results[$item->getClassName()] = new FileStats(
+                    $className = $item->getClassName();
+                    $results['' . $className] = new FileStats(
                         $item->getClassName(),
                         $item->getNamespace(),
                         $item->getStats(),
@@ -141,29 +140,16 @@ class ParserService
         if ($fileNodes != null) {
             //for each file, I will populate an PmdMetric object used to ease the insert on DB
             foreach ($fileNodes as $file) {
-                //TODO get category value
-                $type = "";
-                //TOD get bundle value
-                //$bundle = $this->getBundle($file['name']);
-                $priority = 0;
-                $namespace = $bundle = null;
-                $name = '';
-                foreach ($file->children() as $violation) {
-                    foreach ($violation->attributes() as $a => $b) {
-                        if ($a == "class" && $name == '') {
-                            $name = '' . $b;
-                            $type = $this->getType($name);
-                        } elseif ($a == "package" && !isset($namespace)) {
-                            $namespace = $b;
-                            $bundle = $this->getBundle($b);
-                        } elseif ($a == "priority" && $b >= 1) {
-                            $priority++;
-                        }
-                    }
-                }
-                $violation = array();
-                $violation['pmd'] = $priority;
-                $result[$name] = new FileStats($name, $namespace, $violation, $type, $bundle);
+                $item = new PmdItem($file, $this->categories);
+                $this->monolog->addDebug("Save object in Merge : ".$item->getClassName());
+                $className = $item->getClassName();
+                $results['' . $className] = new FileStats(
+                    $item->getClassName(),
+                    $item->getNamespace(),
+                    $item->getStats(),
+                    $item->getTypeName(),
+                    $item->getBundleName()
+                );
             }
         }
 
@@ -190,37 +176,6 @@ class ParserService
         return $xml;
     }
 
-    private function setBundle($object)
-    {
-        $namespace = $object->namespace;
-        if (preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#",
-            $namespace,
-            $bundle,
-            PREG_OFFSET_CAPTURE)
-        ) {
-            $object->bundle = $bundle[0][0];
-        }
-        return $object;
-    }
-
-    /**
-     * Get the Bundle name from the filename of a class
-     *
-     * @param  $filename String name and path of the file we want to extract the bundle
-     *
-     * @return String Bundle associated to the filename
-     */
-    private function getBundle($filename)
-    {
-        if (preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#",
-            $filename,
-            $bundle,
-            PREG_OFFSET_CAPTURE)
-        ) {
-            return $bundle[0][0];
-        }
-        return null;
-    }
 
     /**
      * Sort function of the the result table.

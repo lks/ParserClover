@@ -2,6 +2,7 @@
 
 namespace Service;
 
+ use Dao\Dao;
  use Service\ParserService;
  use Exception\FileOpeningException;
   use Exception\NothingFoundException;
@@ -15,16 +16,19 @@ class MetricService
 	protected $parserService;
 	protected $couchDbClient;
 	protected $monolog;
+    protected $dao;
 
-	/**
+    /**
      * @param ParserService $parserService
      * @param CouchDBClient $couchDbClient
      * @param Monolog $monolog
+     * @param $dao
      */
-	public function __construct($parserService, $couchDbClient, $monolog) {
+	public function __construct($parserService, $couchDbClient, $monolog, Dao $dao) {
 		$this->parserService = $parserService;
 		$this->couchDbClient = $couchDbClient;
 		$this->monolog 		 = $monolog;
+        $this->dao           = $dao;
 	}
 
 	/**
@@ -87,6 +91,10 @@ class MetricService
 		return $this->getFilteredItems('filters', 'bundle', $designDocument, $bundleName);
 	}
 
+    public function listAllImprovements() {
+        return $this->dao->listAll();
+    }
+
 	protected function getFilteredItems($designDocName, $viewName, $designDocument, $filterValue) {
 		$viewQuery = $this->couchDbClient->createViewQuery($designDocName, $viewName, $designDocument);
 		$viewQuery->setStartKey($filterValue);
@@ -97,5 +105,7 @@ class MetricService
 		}
 		return $response->toArray();
 	}
+
+
 
 }

@@ -71,5 +71,17 @@ parserApp.controller('PmdCtrl', function ($scope, $http) {
     });
 });
 
+// create the controller and inject Angular's $scope
+parserApp.controller('LoadCtrl', function ($scope, $http) {
+    $scope.status = "In progress";
+    url = "http://192.168.56.101/load";
+    $http({
+        url: url,
+        method: "post"
+    }).success(function (data, status, headers, config) {
+        $scope.status = "Done";
+    });
+});
+
 
 

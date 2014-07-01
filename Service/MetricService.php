@@ -77,7 +77,7 @@ class MetricService
      * @return Array with all Document Item
      */
 	public function listByType($designDocument, $type) {
-		return $this->getFilteredItems('filters', 'type', $designDocument, $type);
+		return $this->dao->listByType($designDocument, $type);
 	}
 
 	/**
@@ -94,18 +94,4 @@ class MetricService
     public function listAllImprovements() {
         return $this->dao->listAll();
     }
-
-	protected function getFilteredItems($designDocName, $viewName, $designDocument, $filterValue) {
-		$viewQuery = $this->couchDbClient->createViewQuery($designDocName, $viewName, $designDocument);
-		$viewQuery->setStartKey($filterValue);
-		$viewQuery->setEndKey($filterValue);
-		$response = $viewQuery->execute();
-		if($response == null) {
-			throw new NothingFoundException("No item has been found.");
-		}
-		return $response->toArray();
-	}
-
-
-
 }

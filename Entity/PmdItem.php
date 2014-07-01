@@ -111,7 +111,7 @@ class PmdItem
      */
     public function getStats()
     {
-        return array('pmd',$this->stats);
+        return array('pmd' => $this->stats);
     }
 
     /**

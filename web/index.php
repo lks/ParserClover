@@ -163,12 +163,7 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
     try {
         $view = new FolderDesignDocument("../Couchdb");
         $list = $app["metricService"]->listByType($view, $typeName);
-        $listInterval = $app['dataManagementUtility']->groupByInterval($list, $app['metricConfig']['interval'], 'value');
-        $result = array();
-        $result['data'] = $list;
-        $result ['stat'] = $listInterval;
-        return json_encode($result);
-
+        return $app['serializer']->serialize($list, 'json');
     } catch (Exception $e) {
         return $e->getMessage();
     }

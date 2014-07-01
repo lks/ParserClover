@@ -34,7 +34,6 @@ class ParserService
      */
     public function createMetric($child, $categories)
     {
-        $this->monolog->addDebug("Begin the treatement...");
         if (count($child->children()) > 0) {
             foreach ($child->children() as $newChild) {
                 if ('package' == $newChild->getName()) {
@@ -42,8 +41,6 @@ class ParserService
                 } else if ('file' == $newChild->getName()) {
 
                     if ($newChild->class['name'] != "") {
-                        $this->monolog->addDebug(
-                            sprintf("Create file metric '%s' ", $newChild->class['name']));
                         $class = $newChild->class;
                         $metrics = $newChild->metrics;
                         $fileMetric = new FileMetric($class, $metrics);
@@ -149,7 +146,6 @@ class ParserService
             if (isset($fileNodes)) {
                 foreach ($fileNodes as $file) {
                     $item = new PhpUnitItem($file, $this->categories);
-                    $this->monolog->addDebug("Save object in Merge : ".$item->getClassName());
                     $className = $item->getClassName();
                     $results['' . $className] = new FileStats(
                         $item->getClassName(),
@@ -188,7 +184,6 @@ class ParserService
             //for each file, I will populate an PmdMetric object used to ease the insert on DB
             foreach ($fileNodes as $file) {
                 $item = new PmdItem($file, $this->categories);
-                $this->monolog->addDebug("Save object in Merge : ".$item->getClassName());
                 $className = $item->getClassName();
                 $results['' . $className] = new FileStats(
                     $item->getClassName(),
@@ -212,7 +207,6 @@ class ParserService
     {
         $xml = null;
 
-        $this->monolog->addDebug("Begin the loading...");
         if (file_exists($filepath)) {
             $xml = simplexml_load_file($filepath);
         } else {

@@ -8,7 +8,6 @@
 
 namespace Entity;
 
-
 use Utility\UtilityXml;
 
 class PhpUnitItem
@@ -229,7 +228,7 @@ class PhpUnitItem
         $result = array();
         $result['lineAverage'] = $this->lineAverage;
         $result['methodAverage'] = $this->methodAverage;
-        return array('phpUnit', $result);
+        return array('phpUnit' => $result);
     }
 
 } 

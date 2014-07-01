@@ -136,6 +136,7 @@ class Dao implements IDao
         $response = $viewQuery->execute();
         if ($response == null) {
             throw new NothingFoundException("No item has been found.");
+
         }
         return $response->toArray();
     }

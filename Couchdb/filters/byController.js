@@ -1,4 +1,4 @@
-function(doc, req) {
+ function(doc, req) {
 	if(doc.type == 'Controller') {
 		return true;
 	} else {

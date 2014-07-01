@@ -100,10 +100,10 @@ class ParserService
                 throw new NoPmdDataException();
             }
             //all files
-            $filenodes = $nodes->children();
-            if (isset($filenodes)) {
-                foreach ($filenodes as $file) {
-                    $item = new PhpUnitItem($filenodes);
+            $fileNodes = $nodes->children();
+            if (isset($fileNodes)) {
+                foreach ($fileNodes as $file) {
+                    $item = new PhpUnitItem($file);
                     $this->monolog->addDebug("Save object in Merge : ".$item->getClassName());
                     $results[$item->getClassName()] = new FileStats(
                         $item->getClassName(),

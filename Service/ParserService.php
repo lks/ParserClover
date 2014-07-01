@@ -150,74 +150,20 @@ class ParserService
                 throw new NoPmdDataException();
             }
             //all files
-            $filenodes = $nodes->children();
-            if (isset($filenodes)) {
-                foreach ($filenodes as $file) {
-                    //TODO get category value
-                    $type = "";
-                    $priority = 0;
-                    $namespace = null;
-                    $bundle = null;
-                    $name = '';
-                    $isToBeFixed = false;
-                    $violation = array();
-                    $nbExecutable = 0;
-                    $nbExecuted = 0;
-                    //determine if we have to log this file
-                    foreach ($file->children() as $node) {
-
-                        if ('class' == $node->getName()) {
-                            foreach ($node->attributes() as $key => $value) {
-                                if ($key == 'name') {
-                                    $name = '' . $value;
-                                    $type = $this->getType($name);
-                                    //get the namespace
-                                    foreach ($node->children() as $item) {
-                                        if('namespace' == $item->getName()) {
-                                            foreach ($item->attributes() as $key1 => $value1) {
-                                                if($key1 == 'name') {
-                                                    $namespace = ''.$value1[0];
-                                                    $bundle = $this->getBundle($value1);
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                }
-                            }
-                        } else if ('totals' == $node->getName()) {
-
-                            foreach ($node->children() as $result) {
-                                if ('lines' == $result->getName()) {
-                                    foreach ($result->attributes() as $key => $value) {
-                                        if ($key == 'executable') {
-                                            $nbExecutable = $value;
-                                        } elseif ($key == 'executed') {
-                                            $nbExecuted = $value;
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-
-                    } //end of the node of a file
-                    if (isset($nbExecutable) && $nbExecutable > 0) {
-                        $average = $nbExecuted / $nbExecutable;
-                        //TODO filter by type
-                        if ($average < $this->categories[$type]) {
-                            $violation['phpunit'] = $average;
-                            $isToBeFixed = true;
-
-                        }
-                    } else {
-                        $violation['phpunit'] = 0;
-                        $isToBeFixed = true;
-                    }
-                    if ($isToBeFixed) {
-                        $results[$name] = new FileStats($name, $namespace, $violation, $type, $bundle);
-                    }
-                } //end of the file parcours
+            $fileNodes = $nodes->children();
+            if (isset($fileNodes)) {
+                foreach ($fileNodes as $file) {
+                    $item = new PhpUnitItem($file, $this->categories);
+                    $this->monolog->addDebug("Save object in Merge : ".$item->getClassName());
+                    $className = $item->getClassName();
+                    $results['' . $className] = new FileStats(
+                        $item->getClassName(),
+                        $item->getNamespace(),
+                        $item->getStats(),
+                        $item->getTypeName(),
+                        $item->getBundleName()
+                    );
+                }
             }
         }
         return $results;
@@ -246,28 +192,16 @@ class ParserService
         if ($fileNodes != null) {
             //for each file, I will populate an PmdMetric object used to ease the insert on DB
             foreach ($fileNodes as $file) {
-                //TODO get category value
-                $type = "";
-                $priority = 0;
-                $namespace = null;
-                $bundle = null;
-                $name = '';
-                foreach ($file->children() as $violation) {
-                    foreach ($violation->attributes() as $a => $b) {
-                        if ($a == "class" && $name == '') {
-                            $name = '' . $b;
-                            $type = $this->getType($name);
-                        } elseif ($a == "package" && !isset($namespace)) {
-                            $namespace = ''.$b;
-                            $bundle = $this->getBundle($namespace);
-                        } elseif ($a == "priority" && $b >= 1) {
-                            $priority++;
-                        }
-                    }
-                }
-                $violation = array();
-                $violation['pmd'] = $priority;
-                $result[$name] = new FileStats($name, $namespace, $violation, $type, $bundle);
+                $item = new PmdItem($file, $this->categories);
+                $this->monolog->addDebug("Save object in Merge : ".$item->getClassName());
+                $className = $item->getClassName();
+                $results['' . $className] = new FileStats(
+                    $item->getClassName(),
+                    $item->getNamespace(),
+                    $item->getStats(),
+                    $item->getTypeName(),
+                    $item->getBundleName()
+                );
             }
         }
 
@@ -315,14 +249,10 @@ class ParserService
      */
     private function getBundle($filename)
     {
-        if (preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#",
-            $filename,
-            $bundle,
-            PREG_OFFSET_CAPTURE)
-        ) {
-            return $bundle[0][0];
-        }
-        return null;
+        $aPmd = 0;
+        $bPmd = 0;
+
+        return ($aPmd < $bPmd) ? 1 : -1;
     }
 
     /**

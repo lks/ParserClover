@@ -15,7 +15,7 @@ class FileStats
 
     /* Array contained the number of the violation by type */
 
-    protected $violations;
+    protected $stats;
 
     /* Type of class */
 
@@ -25,11 +25,11 @@ class FileStats
 
     protected $bundle;
 
-    public function __construct($name, $namespace, $violations, $type, $bundle)
+    public function __construct($name, $namespace, $stats, $type, $bundle)
     {
         $this->name = $name;
         $this->namespace = $namespace;
-        $this->violations = $violations;
+        $this->stats = $stats;
         $this->type = $type;
         $this->bundle = $bundle;
     }
@@ -87,21 +87,22 @@ class FileStats
      *
      * @return mixed
      */
-    public function getViolations()
+    public function getStats()
     {
-        return $this->violations;
+        return $this->stats;
     }
 
     /**
      * Sets the value of violations.
      *
-     * @param mixed $violations the violations
+     * @param $stats
+     * @internal param mixed $violations the violations
      *
      * @return self
      */
-    public function setViolations($violations)
+    public function setStats($stats)
     {
-        $this->violations = $violations;
+        $this->stats = $stats;
 
         return $this;
     }

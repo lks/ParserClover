@@ -9,7 +9,6 @@ use Utility\CouchDbWrapper;
 use Utility\DataManagementUtility;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\View\FolderDesignDocument;
-use Doctrine\CouchDB\View\DesignDocument;
 use Symfony\Component\Finder\Finder;
 
 $app = new Silex\Application();
@@ -98,7 +97,8 @@ $app['metricService'] = $app->share(function ($app) {
     return new MetricService(
         $app['parserService'],
         $app['couchDbClient'],
-        $app['monolog']);
+        $app['monolog'],
+        $app['dao']);
 });
 
 /**
@@ -218,5 +218,17 @@ $app->get('/report', function () use ($app) {
         return $e->getMessage();
     }
 });
+
+$app->get('/allImprovements', function () use ($app) {
+    try {
+       $list = $app["metricService"]->listAllImprovements();
+       return $app['serializer']->serialize($list, 'json');
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
+});
+
+
+
 
 $app->run();

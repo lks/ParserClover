@@ -2,10 +2,11 @@
 namespace Service;
 
 use Dao\Dao;
-use Entity\PmdItem;
+use Doctrine\CouchDB\HTTP\HTTPException;
+use Entity\FileMetric;
+use Entity\PmdMetric;
 use Entity\FileStats;
 use Exception\NoPmdDataException;
-use Entity\PhpUnitItem;
 
 
 class ParserService
@@ -21,6 +22,57 @@ class ParserService
         $this->finder = $finder;
         $this->categories = $categories;
         $this->dao = $dao;
+    }
+
+    /**
+     * Create a metric for each child. It's recursive method to explore all xml node
+     *
+     * @param Xml $child
+     * @param categories  Categories to search in the namespace of the classes
+     *
+     * @internal param \Service\Xml $child Node: Xml node to explore
+     * @return true     if all are ok.
+     */
+    public function createMetric($child, $categories)
+    {
+        $this->monolog->addDebug("Begin the treatement...");
+        if (count($child->children()) > 0) {
+            foreach ($child->children() as $newChild) {
+                if ('package' == $newChild->getName()) {
+                    $results = $this->createMetric($newChild, $categories);
+                } else if ('file' == $newChild->getName()) {
+
+                    if ($newChild->class['name'] != "") {
+                        $this->monolog->addDebug(
+                            sprintf("Create file metric '%s' ", $newChild->class['name']));
+                        $class = $newChild->class;
+                        $metrics = $newChild->metrics;
+                        $fileMetric = new FileMetric($class, $metrics);
+                        $isFound = false;
+
+                        foreach ($categories as $category) {
+                            if (preg_match("#" . $category . "$#", $newChild->class['name'])) {
+                                $fileMetric->type = $category;
+                                $isFound = true;
+                                break;
+                            }
+                        }
+                        if (!$isFound) {
+                            $fileMetric->type = "Other";
+                        }
+
+                        $fileMetric = $this->setBundle($fileMetric);
+
+                        $theDocument = $this->couchDbClient->findDocument($fileMetric->name);
+                        if ($theDocument != null && $theDocument->status != 404) {
+                            $this->couchDbClient->putDocument((array)$fileMetric, $fileMetric->name, $theDocument->body['_rev']);
+                        } else {
+                            $this->couchDbClient->postDocument((array)$fileMetric);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -40,29 +92,29 @@ class ParserService
         $phpunitResult = $this->parsePhpUnitReport();
 
         foreach ($pmdResult as $key => $value) {
-                $nbViolationsPmd += $value->getStats()['pmd'];
-                if (isset($phpunitResult[$key])) {
-                    //let's go to merge result
-                    $value->setStats(array_merge($value->getStats(), $phpunitResult[$key]->getStats()));
-                    $nbViolationsPhpUnit++;
-                }
-                array_push($data, $value);
-                //save in database
-                $this->dao->save($value->getName(), $value);
+            $nbViolationsPmd += $value->getViolations()['pmd'];
+            if (isset($phpunitResult[$key])) {
+                //let's go to merge result
+                $value->setViolations(array_merge($value->getViolations(), $phpunitResult[$key]->getViolations()));
+                $nbViolationsPhpUnit++;
+            }
+            array_push($data, $value);
+            //save in database
+            $this->dao->save($value->getName(), $value);
 
 
-                //Delete the row added in the origin array
-                unset($phpunitResult[$key]);
-                array_values($phpunitResult);
+            //Delete the row added in the origin array
+            unset($phpunitResult[$key]);
+            array_values($phpunitResult);
         }
 
         // add files for the only code coverage violation
         foreach ($phpunitResult as $value) {
-                array_push($data, $value);
-                $nbViolationsPhpUnit++;
+            array_push($data, $value);
+            $nbViolationsPhpUnit++;
 
-                //save in database
-                $this->dao->save($value->getName(), $value);
+            //save in database
+            $this->dao->save($value->getName(), $value);
         }
 
         $result = array();
@@ -159,7 +211,6 @@ class ParserService
     /**
      * Init the array from the file content (XML format)
      *
-     * @param $filepath
      * @return List of vialation by typology.
      */
     private function fileXmlToArray($filepath)
@@ -176,19 +227,27 @@ class ParserService
         return $xml;
     }
 
+    private function setBundle($object)
+    {
+        $namespace = $object->namespace;
+        if (preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#",
+            $namespace,
+            $bundle,
+            PREG_OFFSET_CAPTURE)
+        ) {
+            $object->bundle = $bundle[0][0];
+        }
+        return $object;
+    }
 
     /**
-     * Sort function of the the result table.
-     * The constraints are the following:
-     *     - Have the pmd value and the phpunit value present,
-     *     - Have a pmd value superior, if equals, the phpunit have to be inferior,
-     *     - If juste one value is completed, Pmd take the advantage in DESC sort.
+     * Get the Bundle name from the filename of a class
      *
-     * @param  FileStats $a
-     * @param  FileStats $b
-     * @return int 0, if equals. 1, if $a is superior, -1 else.
+     * @param  $filename Name and path of the file we want to extract the bundle
+     *
+     * @return String Bundle associated to the filename
      */
-    public function sortMergeReport($a, $b)
+    private function getBundle($filename)
     {
         $aPmd = 0;
         $bPmd = 0;
@@ -199,16 +258,16 @@ class ParserService
     /**
      * Get the Type name from the class name
      *
-     * @param  $className String name of the class
+     * @param  $className Name of the class
      *
-     * @internal param $categories
      * @return String Type associated to the class name
      */
     private function getType($className)
     {
         $type = '';
         $isFound = false;
-        foreach ($this->categories as $key => $value) {
+        $categories = $this->categories;
+        foreach ($categories as $key => $value) {
             if (preg_match("#" . $key . "$#", $className)) {
                 $type = $key;
                 $isFound = true;
@@ -219,6 +278,44 @@ class ParserService
             $type = "Other";
         }
         return $type;
+    }
+
+    /**
+     * Sort function of the the result table.
+     * The constraints are the following:
+     *     - Have the pmd value and the phpunit value present,
+     *     - Have a pmd value superior, if equals, the phpunit have to be inferior,
+     *     - If juste one value is completed, Pmd take the advantage in DESC sort.
+     *
+     * @param  FileStats $a
+     * @param  FileStats $b
+     * @return 0, if equals. 1, if $a is superior, -1 else.
+     */
+    public function sortMergeReport($a, $b)
+    {
+        $aPmd = 0;
+        $aPhpUnit = 1;
+        $bPmd = 0;
+        $bPhpUnit = 1;
+        $aViolations = $a->getViolations();
+        $bViolations = $b->getViolations();
+
+        if (isset($aViolations['pmd'])) {
+            $aPmd = $aViolations['pmd'];
+        }
+        if (isset($aViolations['phpunit'])) {
+            $aPhpUnit = $aViolations['phpunit'];
+        }
+        if (isset($bViolations['pmd'])) {
+            $bPmd = $bViolations['pmd'];
+        }
+        if (isset($bViolations['phpunit'])) {
+            $bPhpUnit = $bViolations['phpunit'];
+        }
+        if ($aPmd == $bPmd) {
+            return 0;
+        }
+        return ($aPmd < $bPmd) ? 1 : -1;
     }
 
 }

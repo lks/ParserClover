@@ -44,13 +44,13 @@ class Dao implements IDao
      */
     public function listAll($params = null)
     {
+        $response = null;
         if ($params == null) {
             $response = $this->bdClient->allDocs();
             if ($response == null) {
                 throw new NothingFoundException('No document exist in the database.');
             }
-        } else {
-
+            return $response;
         }
         return null;
     }

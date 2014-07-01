@@ -2,9 +2,8 @@
 namespace Service;
 
 use Dao\Dao;
-use Doctrine\CouchDB\HTTP\HTTPException;
-use Entity\FileMetric;
-use Entity\PmdMetric;
+use Entity\PhpUnitItem;
+use Entity\PmdItem;
 use Entity\FileStats;
 use Exception\NoPmdDataException;
 
@@ -92,11 +91,10 @@ class ParserService
         $phpunitResult = $this->parsePhpUnitReport();
 
         foreach ($pmdResult as $key => $value) {
-            $nbViolationsPmd += $value->getViolations()['pmd'];
+            $nbViolationsPmd += $value->getStats()['pmd'];
             if (isset($phpunitResult[$key])) {
                 //let's go to merge result
-                $value->setViolations(array_merge($value->getViolations(), $phpunitResult[$key]->getViolations()));
-                $nbViolationsPhpUnit++;
+                $value->setStats(array_merge($value->getStats(), $phpunitResult[$key]->getStats()));
             }
             array_push($data, $value);
             //save in database
@@ -119,9 +117,6 @@ class ParserService
 
         $result = array();
         $result ['total'] = count($data);
-        $result ['nbViolationsPmd'] = $nbViolationsPmd;
-        $result ['nbViolationsPhpUnit'] = $nbViolationsPhpUnit;
-        usort($data, array($this, 'sortMergeReport'));
         $result ['data'] = $data;
 
         return $result;
@@ -278,44 +273,6 @@ class ParserService
             $type = "Other";
         }
         return $type;
-    }
-
-    /**
-     * Sort function of the the result table.
-     * The constraints are the following:
-     *     - Have the pmd value and the phpunit value present,
-     *     - Have a pmd value superior, if equals, the phpunit have to be inferior,
-     *     - If juste one value is completed, Pmd take the advantage in DESC sort.
-     *
-     * @param  FileStats $a
-     * @param  FileStats $b
-     * @return 0, if equals. 1, if $a is superior, -1 else.
-     */
-    public function sortMergeReport($a, $b)
-    {
-        $aPmd = 0;
-        $aPhpUnit = 1;
-        $bPmd = 0;
-        $bPhpUnit = 1;
-        $aViolations = $a->getViolations();
-        $bViolations = $b->getViolations();
-
-        if (isset($aViolations['pmd'])) {
-            $aPmd = $aViolations['pmd'];
-        }
-        if (isset($aViolations['phpunit'])) {
-            $aPhpUnit = $aViolations['phpunit'];
-        }
-        if (isset($bViolations['pmd'])) {
-            $bPmd = $bViolations['pmd'];
-        }
-        if (isset($bViolations['phpunit'])) {
-            $bPhpUnit = $bViolations['phpunit'];
-        }
-        if ($aPmd == $bPmd) {
-            return 0;
-        }
-        return ($aPmd < $bPmd) ? 1 : -1;
     }
 
 }

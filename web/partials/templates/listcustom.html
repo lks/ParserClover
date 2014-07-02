@@ -5,12 +5,15 @@
 			<th>Class Name</th>
             <th>Namespace</th>
             <th>Bundle</th>
-            <th>Bundle</th>
+            <th>NB Pmd</th>
+            <th>Line Cov.</th>
         </tr>
         <tr ng-repeat="item in list">
 			<td>{{item.value.name}}</td>
             <td>{{item.value.namespace}}</td>
             <td>{{item.value.bundle}}</td>
+            <td>{{item.value.stats.pmd}}</td>
+            <td>{{item.value.stats.phpUnit.lineAverage}}</td>
         </tr>
     </table>
 </div>

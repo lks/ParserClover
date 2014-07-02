@@ -138,6 +138,10 @@ angular.module('components', [])
                     }
                 }
 
+                var yata = function (pmd) {
+                    alert('test');
+                }
+
             },
             templateUrl: 'web/partials/templates/listcustom.html'
         };

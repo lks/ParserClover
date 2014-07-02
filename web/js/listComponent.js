@@ -82,12 +82,11 @@ angular.module('components', [])
                             url: url,
                             method: "get"
                         }).success(function (data, status, headers, config) {
-                            $scope.list = data.data;
-                            $scope.stat = data.stat;
+                            $scope.list = data;
 
                             //init my graph object and generate it
-                            barGraph.remove("chart", "#graph-custom");
-                            barGraph.generate($scope.stat, "elastic", "chart", "#graph-custom");
+                            //barGraph.remove("chart", "#graph-custom");
+                            //barGraph.generate($scope.stat, "elastic", "chart", "#graph-custom");
                         }).error(function (data, status, headers, config) {
                             $scope.data = data;
                             $scope.status = status;
@@ -102,21 +101,43 @@ angular.module('components', [])
  * listType directive will display for the given bundle the metrics associated.
  * As for the list directive, we will display it by two ways (listing and bar graph).
  */
-    .directive('listbundle', function () {
+    .directive('listBundle', function () {
         return {
             restrict: 'E',
             scope: {},
-            controller: function ($scope, $http, $attrs) {
-                url = "http://192.168.56.101/bundle/" + $attrs.bundle;
-                $http({
-                    url: url,
-                    method: "get"
-                }).success(function (data, status, headers, config) {
-                    $scope.list = data;
-                }).error(function (data, status, headers, config) {
-                    $scope.data = data;
-                    $scope.status = status;
+            controller: function ($scope, $http, $attrs, $element, barGraph) {
+                $scope.$watch(function () {
+                    return $attrs.isWithMetric;
+                }, function (newValue, oldValue) {
+                    callService($attrs.bundle, $attrs.isWithMetric);
                 });
+
+                $scope.$watch(function () {
+                    return $attrs.bundle;
+                }, function (newValue, oldValue) {
+                    callService($attrs.bundle, $attrs.isWithMetric);
+                });
+
+
+                var callService = function (bundle, isWithMetric) {
+                    if (bundle != null) {
+                        url = "http://192.168.56.101/bundle/" + bundle + "/isWithMetric/" + isWithMetric;
+                        $http({
+                            url: url,
+                            method: "get"
+                        }).success(function (data, status, headers, config) {
+                            $scope.list = data;
+
+                            //init my graph object and generate it
+                            //barGraph.remove("chart", "#graph-custom");
+                            //barGraph.generate($scope.stat, "elastic", "chart", "#graph-custom");
+                        }).error(function (data, status, headers, config) {
+                            $scope.data = data;
+                            $scope.status = status;
+                        });
+                    }
+                }
+
             },
             templateUrl: 'web/partials/templates/listcustom.html'
         };

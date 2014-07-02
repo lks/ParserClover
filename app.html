@@ -1,49 +1,51 @@
 <!doctype html>
 <html ng-app="parserApp">
-  <head>
-  	<link rel="shortcut icon" href="/web/img/favicon.ico" type="image/x-icon">
-	<link rel="icon" href="/web/img/favicon.ico" type="image/x-icon">
-    <link href="bower_components/bootstrap/dist/css/bootstrap.min.css"  rel="stylesheet">
+<head>
+    <link rel="shortcut icon" href="/web/img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/web/img/favicon.ico" type="image/x-icon">
+    <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="bower_components/bootstrap/dist/css/bootstrap-theme.css" rel="stylesheet">
     <link href="web/css/style.css" rel="stylesheet">
 
-  </head>
-  <body>
-	<!-- HEADER AND NAVBAR -->
-		<header>
-			<nav class="navbar navbar-default">
-			<div class="container">
-				<div class="navbar-header">
-					<a class="navbar-brand" href="/">Clover pour les nuls</a>
-				</div>
+</head>
+<body>
+<!-- HEADER AND NAVBAR -->
+<header>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">Clover pour les nuls</a>
+            </div>
 
-				<ul class="nav navbar-nav navbar-right">
-					<li><a href="#"><i class="fa fa-home"></i>Home</a></li>
-				</ul>
-			</div>
-			</nav>
-		</header>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#"><i class="fa fa-home"></i>Home</a></li>
+                <li><a href="#/report"><i class="fa fa-home"></i>Reporting</a></li>
+                <li><a href="#/load"><i class="fa fa-home"></i>Load</a></li>
+            </ul>
+        </div>
+    </nav>
+</header>
 
-		<!-- MAIN CONTENT AND INJECTED VIEWS -->
-		<div id="main" class="container">
-			<!-- angular templating -->
-			<!-- this is where content will be injected -->
-			<div id="spinner" style="display:none;">
-			    <p>Loading...</p>
-			</div>
-			<div ng-view></div>
+<!-- MAIN CONTENT AND INJECTED VIEWS -->
+<div id="main" class="container">
+    <!-- angular templating -->
+    <!-- this is where content will be injected -->
+    <div id="spinner" style="display:none;">
+        <p>Loading...</p>
+    </div>
+    <div ng-view></div>
 
-		</div>
-  </body>
-  <script src="http://code.jquery.com/jquery.min.js"></script>
+</div>
+</body>
+<script src="http://code.jquery.com/jquery.min.js"></script>
 <script src="http://d3js.org/d3.v3.min.js"></script>
-  <script src="bower_components/angular/angular.min.js"></script>
-  <script src="bower_components/angular-route/angular-route.min.js"></script>
-  <script src="bower_components/angular-resource/angular-resource.min.js"></script>
-  <script src="bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
-  <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-  <script src="web/js/project.js"></script>
-  <script src="web/js/listComponent.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="bower_components/angular-route/angular-route.min.js"></script>
+<script src="bower_components/angular-resource/angular-resource.min.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap.min.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+<script src="web/js/project.js"></script>
+<script src="web/js/listComponent.js"></script>
 
 
 </html>

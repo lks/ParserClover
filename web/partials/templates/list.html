@@ -1,16 +1,14 @@
-<link href="web/css/list.css"  rel="stylesheet">
-<div id="graph" class="graph-display"></div>
+<link href="web/css/list.css" rel="stylesheet">
 
-<div class = "list-component">
+<div class="list-component">
     <table class="table">
         <tr>
             <th>Class Name</th>
             <th>Method Rate</th>
         </tr>
         <tr ng-repeat="item in list">
-           <td>{{item.doc.name}}</td>
+            <td>{{item.doc.name}}</td>
             <td>{{item.doc.methodRate*100}}</td>
         </tr>
     </table>
-    </ul>
 </div>

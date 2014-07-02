@@ -47,14 +47,26 @@ parserApp.config(function ($routeProvider) {
             controller: 'SearchAllCtrl'
         })
         .when('/report', {
-            templateUrl: PARTIALS_PATH + 'templates/listPmd.html',
-            controller: 'PmdCtrl'
+            templateUrl: PARTIALS_PATH + 'list.html',
+            controller: 'ListCtrl'
         })
 });
 
 // create the controller and inject Angular's $scope
 parserApp.controller('mainController', function ($scope) {
     $scope.type = "Controller";
+});
+
+// create the controller and inject Angular's $scope
+parserApp.controller('ListCtrl', function ($scope) {
+    $scope.bundle = "UgeBundle";
+    $scope.isWithParameter = true;
+    console.log('test2');
+
+    $scope.onChange = function () {
+        $scope.isWithParameter = !$scope.isWithParameter;
+        console.log('test' + $scope.isWithParameter);
+    }
 });
 
 // create the controller and inject Angular's $scope
@@ -77,9 +89,10 @@ parserApp.controller('LoadCtrl', function ($scope, $http) {
     url = "http://192.168.56.101/load";
     $http({
         url: url,
-        method: "post"
+        method: "get"
     }).success(function (data, status, headers, config) {
         $scope.status = "Done";
+        $scope.total = data;
     });
 });
 

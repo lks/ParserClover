@@ -7,23 +7,23 @@ class FileStats
 {
     /* Name of the file */
 
-    protected $name;
+    public $name;
 
     /* Name of the namespace of the file */
 
-    protected $namespace;
+    public $namespace;
 
     /* Array contained the number of the violation by type */
 
-    protected $stats;
+    public $stats;
 
     /* Type of class */
 
-    protected $type;
+    public $type;
 
     /* bundle of class */
 
-    protected $bundle;
+    public $bundle;
 
     public function __construct($name, $namespace, $stats, $type, $bundle)
     {
@@ -34,124 +34,4 @@ class FileStats
         $this->bundle = $bundle;
     }
 
-    /**
-     * Gets the value of name.
-     *
-     * @return mixed
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Sets the value of name.
-     *
-     * @param mixed $name the name
-     *
-     * @return self
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of namespace.
-     *
-     * @return mixed
-     */
-    public function getNamespace()
-    {
-        return $this->namespace;
-    }
-
-    /**
-     * Sets the value of namespace.
-     *
-     * @param mixed $namespace the namespace
-     *
-     * @return self
-     */
-    public function setNamespace($namespace)
-    {
-        $this->namespace = $namespace;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of violations.
-     *
-     * @return mixed
-     */
-    public function getStats()
-    {
-        return $this->stats;
-    }
-
-    /**
-     * Sets the value of violations.
-     *
-     * @param $stats
-     * @internal param mixed $violations the violations
-     *
-     * @return self
-     */
-    public function setStats($stats)
-    {
-        $this->stats = $stats;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of type.
-     *
-     * @return mixed
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * Sets the value of type.
-     *
-     * @param mixed $type the type
-     *
-     * @return self
-     */
-    public function setType($type)
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    /**
-     * Gets the value of bundle.
-     *
-     * @return mixed
-     */
-    public function getBundle()
-    {
-        return $this->bundle;
-    }
-
-    /**
-     * Sets the value of bundle.
-     *
-     * @param mixed $bundle the bundle
-     *
-     * @return self
-     */
-    public function setBundle($bundle)
-    {
-        $this->bundle = $bundle;
-
-        return $this;
-    }
 }

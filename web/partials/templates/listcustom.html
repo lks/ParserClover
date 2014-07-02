@@ -3,11 +3,14 @@
 	<table class="table">
 		<tr>
 			<th>Class Name</th>
-			<th>Method Rate</th>
-		</tr>
-		<tr ng-repeat="item in list">
+            <th>Namespace</th>
+            <th>Bundle</th>
+            <th>Bundle</th>
+        </tr>
+        <tr ng-repeat="item in list">
 			<td>{{item.value.name}}</td>
-			<td>{{item.value.methodRate*100}}</td>
-		</tr>
-	</table>
+            <td>{{item.value.namespace}}</td>
+            <td>{{item.value.bundle}}</td>
+        </tr>
+    </table>
 </div>

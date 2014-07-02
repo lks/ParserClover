@@ -97,6 +97,7 @@ $app['metricService'] = $app->share(function ($app) {
     return new MetricService(
         $app['parserService'],
         $app['couchDbClient'],
+        $app['classCategories'],
         $app['monolog'],
         $app['dao']);
 });
@@ -192,38 +193,25 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
  *                      "stat": [..., ..., ..., ...]
  *                     }
  */
-$app->get('/bundle/{bundleName}', function ($bundleName) use ($app) {
+$app->get('/bundle/{bundleName}/isWithMetric/{isMetric}', function ($bundleName, $isMetric) use ($app) {
     try {
         $view = new FolderDesignDocument("../Couchdb");
-        $list = $app["metricService"]->listByBundle($view, $bundleName);
+        $list = $app["metricService"]->listByBundle($view, $bundleName, $isMetric);
         return json_encode($list);
     } catch (Exception $e) {
         return $e->getMessage();
     }
 });
 
-$app->get('/report', function () use ($app) {
+$app->get('/load', function () use ($app) {
     try {
         //$view = new FolderDesignDocument("../Couchdb");
         $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
         $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
-        $list = $app["parserService"]->mergeReport();
-        return $app['serializer']->serialize($list, 'json');
+        $count = $app["parserService"]->mergeReport();
+        return $app['serializer']->serialize($count, 'json');
     } catch (Exception $e) {
         return $e->getMessage();
     }
 });
-
-$app->get('/allImprovements', function () use ($app) {
-    try {
-       $list = $app["metricService"]->listAllImprovements();
-       return $app['serializer']->serialize($list, 'json');
-    } catch (Exception $e) {
-        return $e->getMessage();
-    }
-});
-
-
-
-
 $app->run();

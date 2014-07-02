@@ -29,14 +29,14 @@ class PmdItem
             }
             if (!isset($namespace)) {
                 $this->namespace = UtilityXml::getAttribute("package", $violation);
-                //$this->bundleName = $this->getBundle($this->namespace);
+                $this->bundleName = UtilityXml::getBundle($this->namespace);
             }
             array_push($this->stats, new Violation(
                 UtilityXml::getAttribute("beginline", $violation),
                 UtilityXml::getAttribute("endline", $violation),
                 UtilityXml::getAttribute("priority", $violation),
                 UtilityXml::getAttribute("rule", $violation),
-                UtilityXml::getAttribute("value", $violation)
+                '' . $violation
             ));
         }
     }

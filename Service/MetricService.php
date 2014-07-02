@@ -15,7 +15,8 @@ class MetricService
 {
 	protected $parserService;
 	protected $couchDbClient;
-	protected $monolog;
+    protected $classCategories;
+    protected $monolog;
     protected $dao;
 
     /**
@@ -24,9 +25,10 @@ class MetricService
      * @param Monolog $monolog
      * @param $dao
      */
-	public function __construct($parserService, $couchDbClient, $monolog, Dao $dao) {
-		$this->parserService = $parserService;
-		$this->couchDbClient = $couchDbClient;
+    public function __construct($parserService, $couchDbClient, $classCategories, $monolog, Dao $dao)
+    {
+        $this->parserService = $parserService;
+        $this->couchDbClient = $couchDbClient;
 		$this->monolog 		 = $monolog;
         $this->dao           = $dao;
 	}
@@ -87,9 +89,36 @@ class MetricService
      *
      * @return Array with all Document Item
      */
-	public function listByBundle($designDocument, $bundleName) {
-		return $this->getFilteredItems('filters', 'bundle', $designDocument, $bundleName);
-	}
+    public function listByBundle($designDocument, $bundleName, $isMetric)
+    {
+        $list = $this->dao->listByBundle($designDocument, $bundleName);
+        if ($isMetric === 'true') {
+            $list = $this->listByBundleWithMetrics($list);
+        }
+        return $list;
+    }
+
+    /**
+     * List by bundle name the document contained in the Database
+     * @param  DesignDocument Design document associated to the view
+     * @param  String bundle name.
+     *
+     * @return Array with all Document Item
+     */
+    public function listByBundleWithMetrics($list)
+    {
+        $listAjusted = array();
+        foreach ($list as $key => $value) {
+            if ($value['value']['stats'] != null && count($value['value']['stats']) == 1 && array_key_exists('phpUnit', $value['value']['stats'])) {
+                if ($this->classCategories[$value['value']['type']] > $value['value']['stats']['phpUnit']['lineAverage']) {
+                    array_push($listAjusted, $value);
+                }
+            } else if ($value['value']['stats'] != null && array_key_exists('pmd', $value['value']['stats'])) {
+                array_push($listAjusted, $value);
+            }
+        }
+        return $listAjusted;
+    }
 
     public function listAllImprovements() {
         return $this->dao->listAll();

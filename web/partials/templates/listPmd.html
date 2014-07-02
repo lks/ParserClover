@@ -1,23 +1,39 @@
 <ul>
-	<li>Number of fIles to fixed: {{ total }}</li>
-	<li>Number of PMD violation: {{ nbViolationsPmd }}</li>
-	<li>Number of PhpUnit violation: {{ nbViolationsPhpUnit }}</li>
+    <li>Number of fIles to fixed: {{ total }}</li>
+    <li>Number of PMD violation: {{ nbViolationsPmd }}</li>
+    <li>Number of PhpUnit violation: {{ nbViolationsPhpUnit }}</li>
 </ul>
+<select class="form-control" ng-model="type">
+    <option>Controller</option>
+    <option>Service</option>
+    <option>DAO</option>
+    <option>Entity</option>
+    <option>Exception</option>
+</select>
+
+<select class="form-control" ng-model="type">
+    <option>Controller</option>
+    <option>Service</option>
+    <option>DAO</option>
+    <option>Entity</option>
+    <option>Exception</option>
+</select>
+
 <table class="table">
-	<tr>
-		<th>Class Name</th>
-		<th>Type</th>
+    <tr>
+        <th>Class Name</th>
+        <th>Type</th>
         <th>Bundle</th>
         <th>Namespace</th>
-		<th>Nb Pmd violation</th>
-		<th>PhpUnit rate</th>
-	</tr>
-	<tr ng-repeat="item in list">
-		<td>{{ item.name }}</td>
-		<td>{{ item.type }}</td>
+        <th>Nb Pmd violation</th>
+        <th>PhpUnit rate</th>
+    </tr>
+    <tr ng-repeat="item in list">
+        <td>{{ item.name }}</td>
+        <td>{{ item.type }}</td>
         <td>{{ item.bundle }}</td>
         <td>{{ item.namespace }}</td>
-		<td>{{ item.violations.pmd }}</td>
-		<td>{{ item.violations.phpunit }}</td>
-	</tr>
+        <td>{{ item.violations.pmd }}</td>
+        <td>{{ item.violations.phpunit }}</td>
+    </tr>
 </table>

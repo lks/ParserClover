@@ -58,10 +58,16 @@ parserApp.controller('mainController', function ($scope) {
 });
 
 // create the controller and inject Angular's $scope
-parserApp.controller('ListCtrl', function ($scope) {
-    $scope.bundle = "UgeBundle";
-    $scope.isWithParameter = true;
-    console.log('test2');
+parserApp.controller('ListCtrl', function ($scope, $http) {
+    $scope.isWithParameter = false;
+
+    url = "http://192.168.56.101/bundles";
+    $http({
+        url: url,
+        method: "get"
+    }).success(function (data, status, headers, config) {
+        $scope.bundles = data;
+    });
 
     $scope.onChange = function () {
         $scope.isWithParameter = !$scope.isWithParameter;
@@ -89,7 +95,7 @@ parserApp.controller('LoadCtrl', function ($scope, $http) {
     url = "http://192.168.56.101/load";
     $http({
         url: url,
-        method: "get"
+        method: "post"
     }).success(function (data, status, headers, config) {
         $scope.status = "Done";
         $scope.total = data;

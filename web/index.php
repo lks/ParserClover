@@ -5,8 +5,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Dao\Dao;
 use Service\MetricService;
 use Service\ParserService;
-use Utility\CouchDbWrapper;
-use Utility\DataManagementUtility;
 use Doctrine\CouchDB\CouchDBClient;
 use Doctrine\CouchDB\View\FolderDesignDocument;
 use Symfony\Component\Finder\Finder;
@@ -16,18 +14,18 @@ $app = new Silex\Application();
 //define the configuration for the couchDb tool
 $app['couchBdConfig'] = array(
     'dbname' => 'improve-quality',
-    'host' => '192.168.56.101'
+    'host'   => '192.168.56.101'
 );
 
 $app['classCategories'] = array(
     'Controller' => 0,
-    'DAO' => 0.85,
-    'Entity' => 0.80,
-    'Service' => 0.85,
-    'Other' => 0.80,
-    'Test' => 0,
-    'Renderer' => 0,
-    'Extension' => 0
+    'DAO'        => 0.85,
+    'Entity'     => 0.80,
+    'Service'    => 0.85,
+    'Other'      => 0.80,
+    'Test'       => 0,
+    'Renderer'   => 0,
+    'Extension'  => 0
 );
 
 // define our thresholds criterias
@@ -40,20 +38,12 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 ));
 
 $app->register(new JMS\SerializerServiceProvider\SerializerServiceProvider(), array(
-    'serializer.src_directory' => '../vendor/jms/serializer-bundle',
+    'serializer.src_directory'   => '../vendor/jms/serializer-bundle',
     'serializer.cache.directory' => '../cache'
 ));
 
-$app['couchDbWrapper'] = $app->share(function ($app) {
-    return new CouchDbWrapper();
-});
-
 $app['finder'] = $app->share(function ($app) {
     return new Finder();
-});
-
-$app['dataManagementUtility'] = $app->share(function ($app) {
-    return new DataManagementUtility($app['monolog']);
 });
 
 /**
@@ -69,7 +59,14 @@ $app['couchDbClient'] = $app->share(function ($app) {
 
 $app['dao'] = $app->share(function ($app) {
 
-    return new Dao($app['couchDbClient'], $app['monolog']);
+    $dao = new Dao($app['couchDbClient'], new FolderDesignDocument("../Couchdb"), $app['monolog']);
+    try {
+        $dao->getDbClient()->getDatabaseInfo($app['couchBdConfig']['dbname']);
+    } catch (\Doctrine\CouchDB\HTTP\HTTPException $e) {
+        $dao->getDbClient()->createDatabase($app['couchBdConfig']['dbname']);
+    }
+    return $dao;
+
 });
 
 /**
@@ -103,40 +100,6 @@ $app['metricService'] = $app->share(function ($app) {
 });
 
 /**
- * All service will get all the files metrics and the statistics associated.
- *
- * @throws Exception If an error occured during the getting of the files metrics.
- *
- * @return Json object with the following formation:
- *                     {"data": [
- *                        {
- *                          id: "",
- *                          "_rev": "",
- *                          "doc":
- *                          {
- *                            object serialized...
- *                          }
- *                        },
- *                      ],
- *                      "stat": [..., ..., ..., ...]
- *                     }
- */
-$app->get('/all', function () use ($app) {
-    try {
-        $view = new FolderDesignDocument("../Couchdb");
-        $list = $app["metricService"]->listAll();
-        $listInterval = $app['dataManagementUtility']->groupByInterval($list['rows'], $app['metricConfig']['interval']);
-        $result = array();
-        $result['data'] = $list;
-        $result ['stat'] = $listInterval;
-        return json_encode($result);
-
-    } catch (Exception $e) {
-        return $e->getMessage();
-    }
-});
-
-/**
  * Type service allow us to get the metrics for a given type of Classes. A type of class can be:
  *    - Controller,
  *    - Service,
@@ -146,24 +109,11 @@ $app->get('/all', function () use ($app) {
  *
  * @throws Exception If an error occured during the getting of the files metrics.
  *
- * @return Json object with the following formation:
- *                     {"data": [
- *                        {
- *                          id: "",
- *                          "_rev": "",
- *                          "value":
- *                          {
- *                            object serialized...
- *                          }
- *                        },
- *                      ],
- *                      "stat": [..., ..., ..., ...]
- *                     }
+ * @return Json object
  */
 $app->get('/type/{typeName}', function ($typeName) use ($app) {
     try {
-        $view = new FolderDesignDocument("../Couchdb");
-        $list = $app["metricService"]->listByType($view, $typeName);
+        $list = $app["metricService"]->listByType($typeName);
         return $app['serializer']->serialize($list, 'json');
     } catch (Exception $e) {
         return $e->getMessage();
@@ -179,37 +129,30 @@ $app->get('/type/{typeName}', function ($typeName) use ($app) {
  *
  * @throws Exception If an error occured during the getting of the files metrics.
  *
- * @return Json object with the following formation:
- *                     {"data": [
- *                        {
- *                          id: "",
- *                          "_rev": "",
- *                          "value":
- *                          {
- *                            object serialized...
- *                          }
- *                        },
- *                      ],
- *                      "stat": [..., ..., ..., ...]
- *                     }
+ * @return Json object
  */
-$app->get('/bundle/{bundleName}/isWithMetric/{isMetric}', function ($bundleName, $isMetric) use ($app) {
+$app->get('/bundles/{bundleName}/isWithMetric/{isMetric}', function ($bundleName, $isMetric) use ($app) {
     try {
-        $view = new FolderDesignDocument("../Couchdb");
-        $list = $app["metricService"]->listByBundle($view, $bundleName, $isMetric);
-        return json_encode($list);
+        $list = $app["metricService"]->listByBundle($bundleName, $isMetric);
+        return $app['serializer']->serialize($list, 'json');
     } catch (Exception $e) {
         return $e->getMessage();
     }
 });
 
-$app->get('/load', function () use ($app) {
+$app->post('/load', function () use ($app) {
     try {
-        //$view = new FolderDesignDocument("../Couchdb");
-        $app['couchDbClient']->deleteDatabase($app['couchBdConfig']['dbname']);
-        $app['couchDbClient']->createDatabase($app['couchBdConfig']['dbname']);
         $count = $app["parserService"]->mergeReport();
         return $app['serializer']->serialize($count, 'json');
+    } catch (Exception $e) {
+        return $e->getMessage();
+    }
+});
+
+$app->get('/bundles', function () use ($app) {
+    try {
+        $list = $app["metricService"]->listAllBundles();
+        return $app['serializer']->serialize($list, 'json');
     } catch (Exception $e) {
         return $e->getMessage();
     }

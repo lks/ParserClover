@@ -1,19 +1,23 @@
 <div id="graph-custom" class="graph-display"></div>
-<div class = "list-component">
-	<table class="table">
-		<tr>
-			<th>Class Name</th>
+<div class="list-component">
+    <table class="table table-hover">
+        <tr>
+            <th>Class Name</th>
             <th>Namespace</th>
-            <th>Bundle</th>
+            <th>Type</th>
             <th>NB Pmd</th>
             <th>Line Cov.</th>
         </tr>
         <tr ng-repeat="item in list">
-			<td>{{item.value.name}}</td>
+            <td>{{item.value.name}}</td>
             <td>{{item.value.namespace}}</td>
-            <td>{{item.value.bundle}}</td>
-            <td>{{item.value.stats.pmd}}</td>
-            <td>{{item.value.stats.phpUnit.lineAverage}}</td>
+            <td>{{item.value.type}}</td>
+            <td>
+                <ul>
+                    <li ng-repeat="pmd in item.value.stats.pmd">{{pmd.value}}</li>
+                </ul>
+            </td>
+            <td>{{Math.round(item.value.stats.phpUnit.lineAverage*100)| number:0}}%</td>
         </tr>
     </table>
 </div>

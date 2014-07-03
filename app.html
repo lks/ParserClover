@@ -25,14 +25,14 @@
         </div>
     </nav>
 </header>
-
+<div id="spinner">
+    <img src='web/img/loader.gif' class="ajax-loader"/>
+</div>
 <!-- MAIN CONTENT AND INJECTED VIEWS -->
 <div id="main" class="container">
     <!-- angular templating -->
     <!-- this is where content will be injected -->
-    <div id="spinner" style="display:none;">
-        <p>Loading...</p>
-    </div>
+
     <div ng-view></div>
 
 </div>

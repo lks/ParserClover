@@ -8,16 +8,16 @@ use Entity\FileStats;
 use Exception\NoPmdDataException;
 
 
-class ParserService
+class ParserService implements IParserService
 {
-    protected $monolog;
+    protected $logger;
     protected $finder;
     protected $categories;
     protected $dao;
 
-    public function __construct($monolog, $finder, $categories, Dao $dao)
+    public function __construct($logger, $finder, $categories, Dao $dao)
     {
-        $this->monolog = $monolog;
+        $this->logger = $logger;
         $this->finder = $finder;
         $this->categories = $categories;
         $this->dao = $dao;
@@ -28,7 +28,6 @@ class ParserService
      * desired metric.
      * The aim is to extract the high priority violation to have an overview of the refactoring task.
      *
-     * @internal param array $params Contained the metric to analyse, null if we want to analyse all metrics
      * @return array of FileStats object
      */
     public function mergeReport()
@@ -85,38 +84,22 @@ class ParserService
             //for each file, I will populate an PmdMetric object used to ease the insert on DB
             foreach ($fileNodes as $file) {
                 $item = new PmdItem($file, $this->categories);
-                $this->monolog->addDebug("Save object in Merge : " . $item->getClassName());
-                $className = $item->getClassName();
-                $result['' . $className] = new FileStats(
-                    $item->getClassName(),
-                    $item->getNamespace(),
-                    $item->getStats(),
-                    $item->getTypeName(),
-                    $item->getBundleName()
-                );
+                //we exclude the Test in the result
+                if ('Test' != $item->getTypeName()) {
+                    $this->logger->addDebug("Save object in Merge : " . $item->getClassName());
+                    $className = $item->getClassName();
+                    $result['' . $className] = new FileStats(
+                        $item->getClassName(),
+                        $item->getNamespace(),
+                        $item->getStats(),
+                        $item->getTypeName(),
+                        $item->getBundleName()
+                    );
+                }
             }
         }
 
         return $result;
-    }
-
-    /**
-     * Init the array from the file content (XML format)
-     *
-     * @return List of vialation by typology.
-     */
-    private function fileXmlToArray($filepath)
-    {
-        $xml = null;
-
-        $this->monolog->addDebug("Begin the loading...");
-        if (file_exists($filepath)) {
-            $xml = simplexml_load_file($filepath);
-        } else {
-            return "error";
-
-        }
-        return $xml;
     }
 
     /**
@@ -146,72 +129,38 @@ class ParserService
             if (isset($fileNodes)) {
                 foreach ($fileNodes as $file) {
                     $item = new PhpUnitItem($file, $this->categories);
-                    $this->monolog->addDebug("Save object in Merge : " . $item->getClassName());
-                    $className = $item->getClassName();
-                    $results['' . $className] = new FileStats(
-                        $item->getClassName(),
-                        $item->getNamespace(),
-                        $item->getStats(),
-                        $item->getTypeName(),
-                        $item->getBundleName()
-                    );
+                    if ('Test' != $item->getTypeName()) {
+                        $this->logger->addDebug("Save object in Merge : " . $item->getClassName());
+                        $className = $item->getClassName();
+                        $results['' . $className] = new FileStats(
+                            $item->getClassName(),
+                            $item->getNamespace(),
+                            $item->getStats(),
+                            $item->getTypeName(),
+                            $item->getBundleName()
+                        );
+                    }
                 }
             }
         }
         return $results;
     }
 
-    private function setBundle($object)
-    {
-        $namespace = $object->namespace;
-        if (preg_match("#[\\]{1}[A-Za-z]{1,100}Bundle#",
-            $namespace,
-            $bundle,
-            PREG_OFFSET_CAPTURE)
-        ) {
-            $object->bundle = $bundle[0][0];
-        }
-        return $object;
-    }
-
     /**
-     * Get the Bundle name from the filename of a class
+     * Init the array from the file content (XML format)
      *
-     * @param  $filename Name and path of the file we want to extract the bundle
-     *
-     * @return String Bundle associated to the filename
+     * @param $filepath
+     * @return Array of the xml structure file
      */
-    private function getBundle($filename)
+    private function fileXmlToArray($filepath)
     {
-        $aPmd = 0;
-        $bPmd = 0;
+        $xml = null;
+        if (file_exists($filepath)) {
+            $xml = simplexml_load_file($filepath);
+        } else {
+            return "error";
 
-        return ($aPmd < $bPmd) ? 1 : -1;
-    }
-
-    /**
-     * Get the Type name from the class name
-     *
-     * @param  $className Name of the class
-     *
-     * @return String Type associated to the class name
-     */
-    private function getType($className)
-    {
-        $type = '';
-        $isFound = false;
-        $categories = $this->categories;
-        foreach ($categories as $key => $value) {
-            if (preg_match("#" . $key . "$#", $className)) {
-                $type = $key;
-                $isFound = true;
-                break;
-            }
         }
-        if (!$isFound) {
-            $type = "Other";
-        }
-        return $type;
+        return $xml;
     }
-
 }

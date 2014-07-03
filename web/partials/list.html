@@ -1,11 +1,17 @@
 <div class="row">
     <div>
         <h2>Result for service classes</h2>
-        <select class="form-control" ng-model="bundle">
-            <option>UgeBundle</option>
-            <option>ProfileBundle</option>
-        </select>
-        <input type="checkbox" class="form-control" ng-click="onChange()" ng-model="isWithParameter">
+
+        <div class="row">
+            <div class="col-md-10">
+                <select class="form-control" ng-model="bundle">
+                    <option ng-repeat="bundle in bundles">{{bundle.key}}</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="checkbox" ng-click="onChange()" ng-model="isWithParameter"> Just violation
+            </div>
+        </div>
         <list-bundle bundle="{{bundle}}" is-with-metric="{{isWithParameter}}"></list-bundle>
     </div>
 </div>

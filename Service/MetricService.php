@@ -9,11 +9,11 @@ namespace Service;
  use Doctrine\CouchDB\CouchDBClient;
 
 /**
- * This class manage the metric query to provid to the controller the datas.
+ * This class manage the metric query to provide to the controller the datas.
  */
-class MetricService
-{
-	protected $parserService;
+ class MetricService implements IMetricService
+ {
+     protected $parserService;
 	protected $couchDbClient;
     protected $classCategories;
     protected $monolog;
@@ -22,8 +22,9 @@ class MetricService
     /**
      * @param ParserService $parserService
      * @param CouchDBClient $couchDbClient
+     * @param $classCategories
      * @param Monolog $monolog
-     * @param $dao
+     * @param \Dao\Dao $dao
      */
     public function __construct($parserService, $couchDbClient, $classCategories, $monolog, Dao $dao)
     {
@@ -31,29 +32,6 @@ class MetricService
         $this->couchDbClient = $couchDbClient;
 		$this->monolog 		 = $monolog;
         $this->dao           = $dao;
-	}
-
-	/**
-     * Load the data from the file defined in configuration
-     *
-     * @return Nothing
-     */
-	public function load() {
-		$xml = null;
-		$filename = 'clover.xml';
-
-		$this->monolog->addDebug("Begin the loading...");
-		if (file_exists('../'.$filename)) {
-		    $xml = simplexml_load_file('../'.$filename);
-		} else {
-			return "error";
-
-		}
-		$this->monolog->addDebug(sprintf("File '%s' is loaded", $filename));
-
-		//list all file without package
-		$categories = ['Controller', 'DAO', 'Entity', 'Service', 'Exception', 'Other'];
-		$this->parserService->createMetric($xml->project, $categories);
 	}
 
     /**
@@ -78,49 +56,55 @@ class MetricService
      *
      * @return Array with all Document Item
      */
-	public function listByType($designDocument, $type) {
-		return $this->dao->listByType($designDocument, $type);
-	}
+     public function listByType($type)
+     {
+         return $this->dao->listByType($type);
+     }
 
-	/**
-     * List by bundle name the document contained in the Database
-     * @param  DesignDocument Design document associated to the view
-     * @param  String bundle name.
-     *
-     * @return Array with all Document Item
+     /**
+      * List by bundle name the document contained in the Database
+      * @param $bundleName
+      * @param $isMetric
+      *
+      * @return Array with all Document Item
      */
-    public function listByBundle($designDocument, $bundleName, $isMetric)
-    {
-        $list = $this->dao->listByBundle($designDocument, $bundleName);
-        if ($isMetric === 'true') {
+     public function listByBundle($bundleName, $isMetric)
+     {
+         $list = $this->dao->listByBundle($bundleName);
+         if ($isMetric === 'true') {
             $list = $this->listByBundleWithMetrics($list);
         }
         return $list;
     }
 
-    /**
-     * List by bundle name the document contained in the Database
+     public function listAllBundles()
+     {
+         return $this->dao->listAllBundles();
+     }
+
+     /**
+      * List by bundle name the document contained in the Database
      * @param  DesignDocument Design document associated to the view
      * @param  String bundle name.
      *
      * @return Array with all Document Item
      */
-    public function listByBundleWithMetrics($list)
-    {
-        $listAjusted = array();
-        foreach ($list as $key => $value) {
-            if ($value['value']['stats'] != null && count($value['value']['stats']) == 1 && array_key_exists('phpUnit', $value['value']['stats'])) {
-                if ($this->classCategories[$value['value']['type']] > $value['value']['stats']['phpUnit']['lineAverage']) {
-                    array_push($listAjusted, $value);
-                }
-            } else if ($value['value']['stats'] != null && array_key_exists('pmd', $value['value']['stats'])) {
-                array_push($listAjusted, $value);
-            }
-        }
-        return $listAjusted;
-    }
+     private function listByBundleWithMetrics($list)
+     {
+         $fitList = array();
+         foreach ($list as $key => $value) {
+             if ($value['value']['stats'] != null
+                 && count($value['value']['stats']) == 1
+                 && array_key_exists('phpUnit', $value['value']['stats'])
+             ) {
 
-    public function listAllImprovements() {
-        return $this->dao->listAll();
-    }
-}
+                 if ($this->classCategories[$value['value']['type']] > $value['value']['stats']['phpUnit']['lineAverage']) {
+                     array_push($fitList, $value);
+                 }
+             } else if ($value['value']['stats'] != null && array_key_exists('pmd', $value['value']['stats'])) {
+                 array_push($fitList, $value);
+             }
+         }
+         return $fitList;
+     }
+ }

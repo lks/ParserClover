@@ -106,6 +106,8 @@ angular.module('components', [])
             restrict: 'E',
             scope: {},
             controller: function ($scope, $http, $attrs, $element, barGraph) {
+                $scope.Math = window.Math;
+
                 $scope.$watch(function () {
                     return $attrs.isWithMetric;
                 }, function (newValue, oldValue) {
@@ -120,8 +122,8 @@ angular.module('components', [])
 
 
                 var callService = function (bundle, isWithMetric) {
-                    if (bundle != null) {
-                        url = "http://192.168.56.101/bundle/" + bundle + "/isWithMetric/" + isWithMetric;
+                    if (bundle != null && bundle != '') {
+                        url = "http://192.168.56.101/bundles/" + bundle + "/isWithMetric/" + isWithMetric;
                         $http({
                             url: url,
                             method: "get"
@@ -138,7 +140,7 @@ angular.module('components', [])
                     }
                 }
 
-                var yata = function (pmd) {
+                var getClassError = function (pmd) {
                     alert('test');
                 }
 
